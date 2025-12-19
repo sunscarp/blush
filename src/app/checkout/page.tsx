@@ -238,7 +238,7 @@ export default function CheckoutPage() {
     };
 
     const options = {
-      key: "rzp_test_RtXA523IVfm4I1", // Your Razorpay Key ID
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Your Razorpay Key ID
       amount: grandTotal * 100, // Amount in paise (multiply by 100)
       currency: "INR",
       name: "Ballerz",
