@@ -1,46 +1,59 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase";
 import { useAdmin } from "@/hooks/useAdmin";
 
-export default function Navbar({
-  onCategoryClick,
-}: {
-  onCategoryClick: (cat: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+export default function Navbar() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const { totalItems } = useCart();
   const { user, loading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin(user);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      setAccountMenuOpen(false);
-    } catch (error) {
-      console.error("Error signing out:", error);
+  // 🔑 source of truth = URL
+  const urlSearch = searchParams.get("search") ?? "";
+  const [search, setSearch] = useState(urlSearch);
+
+  // keep input synced when URL changes
+  useEffect(() => {
+    setSearch(urlSearch);
+  }, [urlSearch]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const query = search.trim();
+
+    if (!query) {
+      router.push("/shop");
+      return;
     }
+
+    router.push(`/shop?search=${encodeURIComponent(query)}`);
+  };
+
+  const handleSignOut = async () => {
+    await signOut(auth);
   };
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b">
       {/* Top Row */}
       <div className="flex items-center justify-between px-10 py-4 font-bold">
-        <span
-          onClick={() => window.location.reload()}
-          className="text-2xl cursor-pointer"
-        >
+        <Link href="/" className="text-2xl">
           Ballerz
-        </span>
+        </Link>
 
-        <div className="relative w-1/3">
+        {/* 🔍 Search */}
+        <form onSubmit={handleSubmit} className="w-1/3 relative">
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -49,75 +62,60 @@ export default function Navbar({
           />
           {search && (
             <button
-              onClick={() => setSearch("")}
+              type="button"
+              onClick={() => {
+                setSearch("");
+                router.push(pathname === "/shop" ? "/shop" : "/");
+              }}
               className="absolute right-3 top-2 font-bold"
             >
               ✕
             </button>
           )}
-        </div>
+        </form>
 
+        {/* Right */}
         <div className="flex gap-4 items-center">
           {!loading && !adminLoading && isAdmin && (
-            <Link href="/inventory" className="rounded bg-indigo-600 px-3 py-1 text-white hover:bg-indigo-700">Inventory</Link>
+            <Link
+              href="/inventory"
+              className="rounded bg-indigo-600 px-3 py-1 text-white"
+            >
+              Inventory
+            </Link>
           )}
-          
+
           {!loading && (
             <>
               {user ? (
-                <div 
-                  className="relative"
-                  onMouseEnter={() => setAccountMenuOpen(true)}
-                  onMouseLeave={() => setAccountMenuOpen(false)}
-                >
-                  <button className="font-bold">Account</button>
-                  {accountMenuOpen && (
-                    <div className="absolute top-8 right-0 bg-white border-2 rounded-xl shadow-lg w-52">
-                      <div className="px-4 py-3 border-b">
-                        <p className="font-semibold truncate">{user.displayName || user.email}</p>
-                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                      </div>
-                      <button
-                        onClick={handleSignOut}
-                        className="w-full px-4 py-3 text-left hover:bg-gray-100 font-semibold text-red-600"
-                      >
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <button onClick={handleSignOut}>Sign Out</button>
               ) : (
                 <>
-                  <Link href="/sign-in" className="font-bold hover:text-indigo-600">
-                    Sign In
-                  </Link>
-                  <Link href="/sign-up" className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
+                  <Link href="/sign-in">Sign In</Link>
+                  <Link
+                    href="/sign-up"
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+                  >
                     Sign Up
                   </Link>
                 </>
               )}
             </>
           )}
-          
-          <span className="relative">
+
+          <Link href="/cart" className="relative">
             Cart
             {totalItems > 0 && (
               <sup className="ml-1 text-xs font-bold">{totalItems}</sup>
             )}
-          </span>
+          </Link>
         </div>
       </div>
 
       {/* Nav */}
       <nav className="flex gap-10 px-10 pb-3 font-bold">
-        <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-          Home
-        </button>
-
-        <Link href="/shop">
-          <button className="hover:underline hover:decoration-2 hover:underline-offset-4 transition-all">Shop</button>
-        </Link>
-
+        <Link href="/">Home</Link>
+        <Link href="/shop">Shop</Link>
         <button>FAQ</button>
       </nav>
     </header>

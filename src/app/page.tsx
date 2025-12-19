@@ -1,28 +1,67 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import CategorySection from "@/components/CategorySection";
+import CategoryCarousel from "@/components/CategoryCarousel";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/firebase";
+
+type Product = {
+  ID: number;
+  Description: string;
+  ImageUrl1: string;
+  Price: number;
+  Product: string; // category
+};
 
 export default function Home() {
-  const seasonRef = useRef<HTMLDivElement>(null);
-  const wcRef = useRef<HTMLDivElement>(null);
-  const retroRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [search, setSearch] = useState("");
+
+  // Fetch inventory
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const snap = await getDocs(collection(db, "inventory"));
+      setProducts(snap.docs.map(d => d.data() as Product));
+    };
+    fetchProducts();
+  }, []);
+
+  // 🔍 Local filtering (no redirect)
+  const filtered = search
+    ? products.filter(p =>
+        p.Description.toLowerCase().includes(search.toLowerCase())
+      )
+    : products;
+
+  // 📦 Group dynamically by category
+  const grouped = filtered.reduce<Record<string, Product[]>>((acc, p) => {
+    acc[p.Product] = acc[p.Product] || [];
+    acc[p.Product].push(p);
+    return acc;
+  }, {});
 
   return (
     <>
       <Navbar
-        onCategoryClick={cat => {
-          if (cat === "season") seasonRef.current?.scrollIntoView({ behavior: "smooth" });
-          if (cat === "worldcup") wcRef.current?.scrollIntoView({ behavior: "smooth" });
-          if (cat === "retro") retroRef.current?.scrollIntoView({ behavior: "smooth" });
+        onSearchChange={setSearch}
+        onSearchSubmit={q => {
+          if (!q.trim()) return;
+          router.push(`/shop?search=${encodeURIComponent(q)}`);
         }}
       />
 
       <main className="px-10 pt-32 space-y-24">
-        <CategorySection ref={seasonRef} title="Season 25/26" prefix="S" />
-        <CategorySection ref={wcRef} title="World Cup Jerseys" prefix="W" />
-        <CategorySection ref={retroRef} title="Retro Kits" prefix="R" />
+        {Object.entries(grouped).map(([category, items]) => (
+          <CategoryCarousel
+            key={category}
+            title={category}
+            products={items}
+          />
+        ))}
       </main>
 
       <footer className="mt-32 py-6 text-center font-bold border-t">
