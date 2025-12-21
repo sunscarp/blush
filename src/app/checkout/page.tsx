@@ -77,6 +77,7 @@ export default function CheckoutPage() {
   });
   const [orderDetails, setOrderDetails] = useState<any>(null);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const [showCustomFor, setShowCustomFor] = useState<Record<string, boolean>>({});
   const searchParams = useSearchParams();
   const buyNowParam = searchParams.get("buyNow");
   const [isBuyNow, setIsBuyNow] = useState(false);
@@ -347,34 +348,49 @@ export default function CheckoutPage() {
 
   if (loading || loadingItems) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-2xl font-bold">Loading...</div>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-700 border-t-white mx-auto mb-4"></div>
+          </div>
+          <h2 className="text-xl font-semibold text-white mb-2">Loading Checkout</h2>
+          <p className="text-gray-400 text-sm">Please wait while we prepare your order...</p>
+        </div>
       </div>
     );
   }
 
   if (orderStatus === "success") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-green-50">
-        <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
-          <div className="text-green-600 text-6xl mb-4">✓</div>
-          <h1 className="text-3xl font-bold text-green-600 mb-4">Order Successful!</h1>
-          <p className="text-gray-600 mb-4">
-            Your order has been placed successfully. Order ID: <span className="font-mono">{orderDetails?.orderId}</span>
+      <div className="min-h-screen flex items-center justify-center bg-black px-4">
+        <div className="bg-gray-900 border border-gray-700 p-8 lg:p-12 rounded-2xl shadow-2xl text-center max-w-md w-full">
+          <div className="bg-green-500/20 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+            <svg className="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-white mb-4">Order Confirmed</h1>
+          <p className="text-gray-300 mb-4 text-sm lg:text-base">
+            Thank you for your purchase. Your order has been successfully placed.
           </p>
-          <p className="text-gray-600 mb-6">
-            Total Amount: <span className="font-bold">{formatCurrency(orderDetails?.total || 0)}</span>
-          </p>
+          <div className="bg-gray-800 rounded-lg p-4 mb-6">
+            <p className="text-gray-400 text-sm mb-1">Order ID</p>
+            <p className="font-mono text-white text-lg font-semibold">{orderDetails?.orderId}</p>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-4 mb-8">
+            <p className="text-gray-400 text-sm mb-1">Total Amount</p>
+            <p className="text-white text-2xl font-bold">{formatCurrency(orderDetails?.total || 0)}</p>
+          </div>
           <div className="flex flex-col gap-3">
             <button
               onClick={() => router.push("/")}
-              className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700"
+              className="bg-white text-black px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-all duration-200 transform hover:scale-105"
             >
               Continue Shopping
             </button>
             <button
               onClick={() => router.push("/orders")}
-              className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-bold hover:bg-gray-300"
+              className="bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all duration-200 transform hover:scale-105"
             >
               View Orders
             </button>
@@ -386,25 +402,29 @@ export default function CheckoutPage() {
 
   if (orderStatus === "failed") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-red-50">
-        <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
-          <div className="text-red-600 text-6xl mb-4">✗</div>
-          <h1 className="text-3xl font-bold text-red-600 mb-4">Payment Failed</h1>
-          <p className="text-gray-600 mb-6">
-            Sorry, your payment could not be processed. Please try again or contact support.
+      <div className="min-h-screen flex items-center justify-center bg-black px-4">
+        <div className="bg-gray-900 border border-gray-700 p-8 lg:p-12 rounded-2xl shadow-2xl text-center max-w-md w-full">
+          <div className="bg-red-500/20 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+            <svg className="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-white mb-4">Payment Failed</h1>
+          <p className="text-gray-300 mb-8 text-sm lg:text-base">
+            Your payment could not be processed. Please try again or contact support for assistance.
           </p>
           <div className="flex flex-col gap-3">
             <button
               onClick={() => setOrderStatus("checkout")}
-              className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700"
+              className="bg-white text-black px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-all duration-200 transform hover:scale-105"
             >
               Try Again
             </button>
             <button
               onClick={() => router.push("/")}
-              className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-bold hover:bg-gray-300"
+              className="bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all duration-200 transform hover:scale-105"
             >
-              Go to Home
+              Return Home
             </button>
           </div>
         </div>
@@ -414,15 +434,22 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-black px-4">
         <div className="text-center">
-          <h1 className="text-3xl font-bold mb-4">Your Cart is Empty</h1>
-          <p className="text-gray-600 mb-6">Add some items to your cart before checking out.</p>
+          <div className="bg-gray-800 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+            <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-white mb-4">Your Cart is Empty</h1>
+          <p className="text-gray-400 mb-8 max-w-md mx-auto text-sm lg:text-base">
+            Looks like you haven't added any items to your cart yet. Start shopping to see your items here.
+          </p>
           <button
             onClick={() => router.push("/")}
-            className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700"
+            className="bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-all duration-200 transform hover:scale-105"
           >
-            Continue Shopping
+            Start Shopping
           </button>
         </div>
       </div>
@@ -430,151 +457,229 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 checkout-black-text">
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+    <div className="min-h-screen bg-black py-6 lg:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-8 lg:mb-12">
+          <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">Checkout</h1>
+          <p className="text-gray-400 text-sm lg:text-base">Complete your order securely</p>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 lg:gap-8">
           {/* Customer Details Form */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-bold mb-4">Customer Details</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Full Name *</label>
-                <input
-                  type="text"
-                  value={customerDetails.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Enter your full name"
-                  required
-                />
+          <div className="xl:col-span-3">
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
+              <div className="px-6 py-5 lg:px-8 lg:py-6 border-b border-gray-700">
+                <h2 className="text-xl lg:text-2xl font-bold text-white">Billing Information</h2>
+                <p className="text-gray-400 text-sm mt-1">Please fill in your details below</p>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium mb-2">Email *</label>
-                <input
-                  type="email"
-                  value={customerDetails.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Enter your email"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2">Phone Number *</label>
-                <input
-                  type="tel"
-                  value={customerDetails.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Enter your phone number"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2">Address *</label>
-                <textarea
-                  value={customerDetails.address}
-                  onChange={(e) => handleInputChange("address", e.target.value)}
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  rows={3}
-                  placeholder="Enter your complete address"
-                  required
-                />
+              <div className="px-6 py-6 lg:px-8 lg:py-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-white mb-3">
+                      Full Name <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={customerDetails.name}
+                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                      placeholder="Enter your full name"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-white mb-3">
+                      Email Address <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={customerDetails.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                      placeholder="you@example.com"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-white mb-3">
+                      Phone Number <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={customerDetails.phone}
+                      onChange={(e) => handleInputChange("phone", e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                      placeholder="+91 98765 43210"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-white mb-3">
+                      Complete Address <span className="text-red-400">*</span>
+                    </label>
+                    <textarea
+                      value={customerDetails.address}
+                      onChange={(e) => handleInputChange("address", e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-200 placeholder-gray-400 resize-none"
+                      rows={4}
+                      placeholder="Street address, city, state, PIN code"
+                      required
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Order Summary */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-bold mb-4">Order Summary</h2>
-            
-            <div className="space-y-4 mb-6">
-              {items.map((item) => {
-                const key = String(item.ID);
-                const prod = inventoryMap[key];
-                const img = prod?.ImageUrl1 || prod?.ImageUrl2 || prod?.ImageUrl3 || "/favicon.ico";
-                const basePrice = prod?.Price != null ? Number(prod.Price) : 0;
-                const customPrice = item.isCustomized && item.customPrice ? Number(item.customPrice) : 0;
-                const totalPrice = basePrice + customPrice;
-                const qty = Number(item.Quantity || 0);
-                const total = totalPrice * qty;
+          <div className="xl:col-span-2">
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden sticky top-6">
+              <div className="px-6 py-5 lg:px-8 lg:py-6 border-b border-gray-700">
+                <h2 className="text-xl lg:text-2xl font-bold text-white">Order Summary</h2>
+                <p className="text-gray-400 text-sm mt-1">{items.length} item{items.length !== 1 ? 's' : ''} in your order</p>
+              </div>
+              
+              <div className="px-6 py-6 lg:px-8 lg:py-6">
+                <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
+                  {items.map((item) => {
+                    const key = String(item.ID);
+                    const prod = inventoryMap[key];
+                    const img = prod?.ImageUrl1 || prod?.ImageUrl2 || prod?.ImageUrl3 || "/favicon.ico";
+                    const basePrice = prod?.Price != null ? Number(prod.Price) : 0;
+                    const customPrice = item.isCustomized && item.customPrice ? Number(item.customPrice) : 0;
+                    const totalPrice = basePrice + customPrice;
+                    const qty = Number(item.Quantity || 0);
+                    const total = totalPrice * qty;
 
-                return (
-                  <div key={String(item.docId ?? item.ID)} className="flex gap-4 items-center border-b pb-4">
-                    <img 
-                      src={img} 
-                      alt={prod?.Product ?? `item-${key}`} 
-                      className="h-16 w-20 object-cover rounded"
-                    />
-                    <div className="flex-1">
-                      <p className="font-semibold">{prod?.Product ?? `Item ${key}`}</p>
-                      <p className="text-sm text-gray-600">{prod?.Description}</p>
-                      {item.Size && <p className="text-sm text-gray-600">Size: {item.Size}</p>}
-                      {item.isCustomized && (
-                        <div className="mt-1 p-2 bg-blue-50 rounded border border-blue-200">
-                          <p className="text-sm font-medium text-blue-800">
-                            Customized: "{item.customizationText}"
-                          </p>
+                    return (
+                      <div key={String(item.docId ?? item.ID)} className="flex gap-4 pb-4 border-b border-gray-700 last:border-b-0">
+                        <div className="relative">
+                          <img 
+                            src={img} 
+                            alt={prod?.Product ?? `item-${key}`} 
+                            className="h-16 w-16 lg:h-20 lg:w-20 object-cover rounded-lg border border-gray-600"
+                          />
+                          <div className="pointer-events-none select-none flex items-center justify-center w-full" style={{ position: 'absolute', bottom: 0, right: 0, left: 0 }}>
+                            <span className="inline-flex items-center px-2.5 py-1 mb-[-0.5rem] rounded-full bg-gradient-to-br from-gray-800 to-gray-700 border border-gray-500 shadow text-xs font-semibold text-white min-w-[1.5rem] justify-center">
+                              x{qty}
+                            </span>
+                          </div>
                         </div>
-                      )}
-                      <p className="text-sm text-gray-600">Qty: {qty}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold">{formatCurrency(total)}</p>
-                      <p className="text-sm text-gray-600">{formatCurrency(totalPrice)} each</p>
-                      {customPrice > 0 && (
-                        <p className="text-xs text-blue-600">
-                          (Base: {formatCurrency(basePrice)} + Custom: {formatCurrency(customPrice)})
-                        </p>
-                      )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-white truncate text-sm lg:text-base">{prod?.Product ?? `Item ${key}`}</p>
+                          {prod?.Description && (
+                            <p className="text-xs lg:text-sm text-gray-400 truncate mt-1">{prod.Description}</p>
+                          )}
+                          {item.Size && <p className="text-xs text-gray-400 mt-1">Size: {item.Size}</p>}
+                          
+                          {item.isCustomized && qty === 1 && (
+                            <div className="mt-2">
+                              <button
+                                onClick={() => setShowCustomFor(prev => ({ ...prev, [key]: !prev[key] }))}
+                                className="inline-flex items-center gap-1 px-2 py-1 bg-gray-800 border border-gray-600 rounded-md text-gray-300 hover:bg-gray-700 transition-all duration-200 text-xs"
+                              >
+                                <svg
+                                  className={`h-3 w-3 transform ${showCustomFor[key] ? "rotate-180" : "rotate-0"} transition-transform`}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                                Custom Details
+                              </button>
+
+                              <div className={`mt-2 overflow-hidden transition-all duration-200 ${showCustomFor[key] ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
+                                <div className="p-3 bg-gray-800 border border-gray-600 rounded-lg">
+                                  <p className="text-xs text-gray-300 break-words">"{item.customizationText || 'No details provided.'}"</p>
+                                  {item.customPrice != null && (
+                                    <p className="text-xs text-gray-400 mt-1">Additional: {formatCurrency(Number(item.customPrice))}</p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="font-bold text-white text-sm lg:text-base">{formatCurrency(total)}</p>
+                          {customPrice > 0 && (
+                            <div className="text-xs text-gray-400 mt-1">
+                              <div>{formatCurrency(basePrice)} base</div>
+                              <div>+{formatCurrency(customPrice)} custom</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="border-t border-gray-700 pt-4 mb-6">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Subtotal</span>
+                    <span className="text-white font-semibold">{formatCurrency(grandTotal)}</span>
+                  </div>
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-gray-400">Shipping</span>
+                    <span className="text-green-400 font-semibold">Free</span>
+                  </div>
+                  <div className="border-t border-gray-700 mt-4 pt-4">
+                    <div className="flex justify-between items-center text-xl font-bold">
+                      <span className="text-white">Total</span>
+                      <span className="text-white">{formatCurrency(grandTotal)}</span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                </div>
 
-            <div className="border-t pt-4 mb-6">
-              <div className="flex justify-between items-center text-xl font-bold">
-                <span>Total:</span>
-                <span>{formatCurrency(grandTotal)}</span>
+                <button
+                  onClick={handlePayment}
+                  disabled={!isFormValid() || orderStatus === "processing" || !razorpayLoaded}
+                  className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-200 transform ${
+                    isFormValid() && razorpayLoaded && orderStatus !== "processing"
+                      ? "bg-white text-black hover:bg-gray-200 hover:scale-105 shadow-lg"
+                      : "bg-gray-700 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  {orderStatus === "processing" ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle>
+                        <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" className="opacity-75"></path>
+                      </svg>
+                      Processing...
+                    </span>
+                  ) : (
+                    `Pay ${formatCurrency(grandTotal)}`
+                  )}
+                </button>
+                
+                {!razorpayLoaded && (
+                  <p className="text-xs text-gray-500 mt-3 text-center">Initializing secure payment...</p>
+                )}
+                
+                {/* Security badges */}
+                <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-gray-700">
+                  <div className="flex items-center gap-1 text-gray-400 text-xs">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    SSL Secured
+                  </div>
+                  <div className="w-px h-4 bg-gray-600"></div>
+                  <div className="text-gray-400 text-xs">
+                    Powered by Razorpay
+                  </div>
+                </div>
               </div>
             </div>
-
-            <button
-              onClick={handlePayment}
-              disabled={!isFormValid() || orderStatus === "processing" || !razorpayLoaded}
-              className={`w-full py-4 rounded-lg font-bold text-lg transition-colors ${
-                isFormValid() && razorpayLoaded && orderStatus !== "processing"
-                  ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
-            >
-              {orderStatus === "processing" ? "Processing..." : `Pay ${formatCurrency(grandTotal)}`}
-            </button>
-            
-            {!razorpayLoaded && (
-              <p className="text-sm text-gray-500 mt-2 text-center">Loading payment system...</p>
-            )}
           </div>
         </div>
       </div>
     </div>
   );
-}
-
-// Force black text for this page only
-// This style will override the global white text
-if (typeof window !== "undefined") {
-  const styleId = "checkout-black-text-style";
-  if (!document.getElementById(styleId)) {
-    const style = document.createElement("style");
-    style.id = styleId;
-    style.innerHTML = `.checkout-black-text, .checkout-black-text * { color: #000 !important; }`;
-    document.head.appendChild(style);
-  }
 }
