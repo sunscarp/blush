@@ -35,9 +35,7 @@ type OrderItem = {
   customPrice?: number;
   product?: {
     Description?: string;
-    Product?: string;
     Price?: number;
-    ImageUrl1?: string;
   };
 };
 
@@ -57,14 +55,14 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [fetching, setFetching] = useState(true);
 
-  // 🔐 Auth guard
+  /* 🔐 Auth guard */
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/sign-in");
     }
   }, [user, loading, router]);
 
-  // 🔥 Fetch orders from Firestore
+  /* 🔥 Fetch orders */
   useEffect(() => {
     if (!user?.email) return;
 
@@ -86,57 +84,52 @@ export default function OrdersPage() {
     return () => unsub();
   }, [user]);
 
-  // 🛒 BUY AGAIN — Firestore + CartContext
+  /* 🛒 Buy again */
   const handleBuyAgain = async (items: OrderItem[]) => {
     if (!user?.email) return;
 
     const cartRef = collection(db, "Cart");
 
     for (const item of items) {
-      const cartItemData = {
+      const baseData = {
         ID: item.ID,
         Quantity: item.Quantity,
         Size: item.Size || "S",
         UserMail: user.email,
         ["Added On"]: serverTimestamp(),
-        ...(item.isCustomized && {
-          isCustomized: true,
-          customizationText: item.customizationText,
-          customPrice: item.customPrice || 0
-        })
       };
 
-      // For customized items, always add as new entry
       if (item.isCustomized) {
-        await addDoc(cartRef, cartItemData);
+        await addDoc(cartRef, {
+          ...baseData,
+          isCustomized: true,
+          customizationText: item.customizationText,
+          customPrice: item.customPrice || 0,
+        });
       } else {
-        // For non-customized items, try to merge with existing
         const q = query(
           cartRef,
           where("UserMail", "==", user.email),
           where("ID", "==", item.ID),
-          where("Size", "==", (item.Size || "S")),
+          where("Size", "==", item.Size || "S"),
           where("isCustomized", "==", false)
         );
 
         const snap = await getDocs(q);
 
         if (!snap.empty) {
-          // Update existing cart item
-          const docRef = snap.docs[0].ref;
+          const ref = snap.docs[0].ref;
           const prevQty = snap.docs[0].data().Quantity || 0;
 
-          await updateDoc(docRef, {
+          await updateDoc(ref, {
             Quantity: prevQty + item.Quantity,
             ["Added On"]: serverTimestamp(),
           });
         } else {
-          // Add new cart item
-          await addDoc(cartRef, { ...cartItemData, isCustomized: false });
+          await addDoc(cartRef, { ...baseData, isCustomized: false });
         }
       }
 
-      // Update cart badge UI
       for (let i = 0; i < item.Quantity; i++) {
         addItem(String(item.ID));
       }
@@ -145,66 +138,68 @@ export default function OrdersPage() {
     router.push("/cart");
   };
 
-  const formatDate = (ts: any) => {
-    if (!ts?.toDate) return "";
-    return ts.toDate().toLocaleDateString("en-IN", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  };
+  const formatDate = (ts: any) =>
+    ts?.toDate
+      ? ts.toDate().toLocaleDateString("en-IN", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
+      : "";
 
   if (loading || fetching) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-bold">
+      <div className="min-h-screen flex items-center justify-center text-white font-semibold">
         Loading orders...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white px-12 py-10">
+    <div className="min-h-screen bg-black text-white px-12 py-10">
       {/* Header */}
       <div className="mb-10 space-y-2">
         <div className="flex justify-between items-center">
           <span
             onClick={() => router.push("/")}
-            className="text-2xl font-bold cursor-pointer"
+            className="text-2xl font-semibold cursor-pointer"
           >
             Ballerz
           </span>
-          <h1 className="text-3xl font-bold">Your Orders</h1>
+          <h1 className="text-3xl font-semibold">Your Orders</h1>
         </div>
-        
+
         <button
           onClick={() => router.back()}
-          className="font-bold hover:underline"
+          className="font-medium hover:underline text-gray-300"
         >
           ← Back
         </button>
-
       </div>
 
       {orders.length === 0 ? (
-        <p className="text-lg font-medium">You have no orders yet.</p>
+        <p className="text-lg text-gray-300">You have no orders yet.</p>
       ) : (
         <div className="space-y-6">
           {orders.map((order) => (
             <div
               key={order.id}
-              className="border-2 rounded-xl p-6 space-y-4"
+              className="border border-gray-600 rounded-xl p-6 space-y-4"
             >
-              {/* Order meta */}
+              {/* Meta */}
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-bold">
-                    Order ID: <span className="font-mono">{order.id}</span>
+                  <p className="font-semibold">
+                    Order ID:{" "}
+                    <span className="font-mono">{order.id}</span>
                   </p>
-                  <p className="text-sm">{formatDate(order.createdAt)}</p>
+                  <p className="text-sm text-gray-400">
+                    {formatDate(order.createdAt)}
+                  </p>
                 </div>
 
-                <span className="px-4 py-1 rounded-full border font-semibold capitalize">
+                <span className="px-4 py-1 rounded-full border border-gray-500 font-medium capitalize">
                   {order.status}
                 </span>
               </div>
@@ -212,28 +207,28 @@ export default function OrdersPage() {
               {/* Items */}
               <div className="space-y-2">
                 {order.items.map((item, idx) => {
-                  const basePrice = (item.product?.Price ?? 0);
-                  const customPrice = item.isCustomized && item.customPrice ? item.customPrice : 0;
-                  const totalPrice = basePrice + customPrice;
-                  const itemTotal = totalPrice * item.Quantity;
-                  
+                  const base = item.product?.Price ?? 0;
+                  const custom = item.isCustomized ? item.customPrice ?? 0 : 0;
+                  const total = (base + custom) * item.Quantity;
+
                   return (
                     <div key={idx} className="space-y-1">
-                      <div className="flex justify-between text-sm font-medium">
+                      <div className="flex justify-between text-sm">
                         <span>
                           {item.product?.Description ?? "Product"} ×{" "}
                           {item.Quantity}
                         </span>
-                        <span>Rs. {itemTotal}</span>
+                        <span>Rs. {total}</span>
                       </div>
+
                       {item.isCustomized && (
-                        <div className="ml-4 p-2 bg-blue-50 rounded border border-blue-200">
-                          <p className="text-xs font-medium text-blue-800">
+                        <div className="ml-4 p-2 bg-gray-900 border border-gray-700 rounded">
+                          <p className="text-xs text-blue-400">
                             Customized: "{item.customizationText}"
                           </p>
-                          {customPrice > 0 && (
-                            <p className="text-xs text-blue-600">
-                              +Rs. {customPrice} customization fee
+                          {custom > 0 && (
+                            <p className="text-xs text-blue-300">
+                              +Rs. {custom} customization fee
                             </p>
                           )}
                         </div>
@@ -244,27 +239,27 @@ export default function OrdersPage() {
               </div>
 
               {/* Total */}
-              <div className="flex justify-between items-center font-bold text-lg">
+              <div className="flex justify-between items-center font-semibold text-lg">
                 <span>Total</span>
                 <span>Rs. {order.total}</span>
               </div>
 
               {/* Actions */}
               <div className="flex gap-4 pt-4">
-                <button className="px-4 py-2 border-2 rounded font-bold">
+                <button className="px-4 py-2 border border-gray-500 rounded font-medium hover:bg-gray-800">
                   Track Order
                 </button>
 
                 <button
                   onClick={() => handleBuyAgain(order.items)}
-                  className="px-4 py-2 border-2 rounded font-bold"
+                  className="px-4 py-2 border border-gray-500 rounded font-medium hover:bg-gray-800"
                 >
                   Buy Again
                 </button>
 
                 <button
                   onClick={() => generateInvoice(order)}
-                  className="px-4 py-2 border-2 rounded font-bold"
+                  className="px-4 py-2 border border-gray-500 rounded font-medium hover:bg-gray-800"
                 >
                   Download Invoice
                 </button>

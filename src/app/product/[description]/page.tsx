@@ -1,440 +1,317 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { collection, query, where, getDocs, addDoc, updateDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
-import { useAuth } from "@/context/AuthContext";
-import { readGuestCartFromCookie, writeGuestCartToCookie } from "@/context/CartContext";
+import ReviewCarousel from "@/components/ReviewCarousel";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  updateDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "@/firebase";
-import Navbar from "@/components/Navbar";
+import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 
 type Product = {
   ID: number;
   Description: string;
-  ImageUrl1: string;
-  ImageUrl2: string;
-  ImageUrl3: string;
-  Material: string;
-  Price: number;
   Product: string;
-  Size: string;
-  Tag: string;
-  createdAt: any;
-  Customize?: boolean;
-  CustomText?: string;
-  customprice?: number;
+  Price: number;
+  Material?: string;
+  ImageUrl1?: string;
+  ImageUrl2?: string;
+  ImageUrl3?: string;
 };
 
-export default function ProductDetail() {
-  const params = useParams();
+export default function ProductPage() {
+  const { description } = useParams();
   const router = useRouter();
-  const { addItem, removeItem, cart } = useCart();
   const { user } = useAuth();
+  const { addItem } = useCart();
+
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedSize, setSelectedSize] = useState<string>("S");
-  const [pendingQty, setPendingQty] = useState<number>(1);
-  const [inCartCount, setInCartCount] = useState<number>(0);
-  const [wantsCustomization, setWantsCustomization] = useState<boolean>(false);
-  const [customizationText, setCustomizationText] = useState<string>("");
 
-  const description = decodeURIComponent(params.description as string);
-  const productId = product?.ID.toString() || "";
-  const quantity = cart[productId] ?? 0;
+  const [selectedSize, setSelectedSize] = useState("M");
+  const [imageIndex, setImageIndex] = useState(0);
+  const [quantity, setQuantity] = useState(1); // ✅ NEW
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
-  // keep a size-specific in-cart count (reads from Firestore for signed-in users, cookie for guests)
-  useEffect(() => {
-    if (!product) return;
-
-    if (user && user.email) {
-      const colRef = collection(db, "Cart");
-      const q = query(colRef, where("UserMail", "==", user.email), where("ID", "==", product.ID), where("Size", "==", selectedSize));
-      const unsub = onSnapshot(q, (snap) => {
-        let qty = 0;
-        snap.docs.forEach((d) => { qty += Number((d.data() as any).Quantity || 0); });
-        setInCartCount(qty);
-      }, (e) => console.error("cart snapshot error", e));
-      return () => unsub();
-    }
-
-    const guestArr = readGuestCartFromCookie();
-    const match = guestArr.find((it) => String(it.ID) === String(product.ID) && (it.Size || "S") === selectedSize);
-    setInCartCount(match ? Number(match.Quantity || 0) : 0);
-  }, [user, selectedSize, product]);
-
-
-
+  // 🔥 Fetch product
   useEffect(() => {
     const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        console.log("Searching for description:", description);
-        // Query Firestore by Description field
-        const productsRef = collection(db, "inventory");
-        const q = query(productsRef, where("Description", "==", description));
-        const querySnapshot = await getDocs(q);
+      if (!description) return;
 
-        console.log("Query results:", querySnapshot.size, "documents found");
-        
-        if (!querySnapshot.empty) {
-          const docData = querySnapshot.docs[0].data() as Product;
-          console.log("Found product:", docData);
-          setProduct(docData);
-        } else {
-          console.error("Product not found");
-          // Try to get all documents to debug
-          const allDocs = await getDocs(collection(db, "inventory"));
-          console.log("All documents in Inventory:", allDocs.size);
-          allDocs.forEach(doc => {
-            console.log("Document description:", doc.data().Description);
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching product:", error);
-      } finally {
-        setLoading(false);
+      const q = query(
+        collection(db, "inventory"),
+        where("Description", "==", decodeURIComponent(description as string))
+      );
+
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        setProduct(snap.docs[0].data() as Product);
       }
+
+      setLoading(false);
     };
 
-    if (description) {
-      fetchProduct();
-    }
+    fetchProduct();
   }, [description]);
+
+  useEffect(() => {
+  if (!product) return;
+
+  const fetchRelated = async () => {
+    const q = query(
+      collection(db, "inventory"),
+      where("Product", "==", product.Product)
+    );
+
+    const snap = await getDocs(q);
+
+    const others = snap.docs
+      .map(d => d.data() as Product)
+      .filter(p => p.Description !== product.Description);
+
+    // shuffle and pick 4
+    const shuffled = others.sort(() => 0.5 - Math.random());
+    setRelatedProducts(shuffled.slice(0, 4));
+  };
+
+  fetchRelated();
+}, [product]);
 
   if (loading) {
     return (
-      <>
-        <Navbar />
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-2xl font-bold">Loading...</div>
-        </div>
-      </>
+      <div className="min-h-screen flex items-center justify-center text-white font-bold">
+        Loading product...
+      </div>
     );
   }
 
   if (!product) {
     return (
-      <>
-        <Navbar />
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold mb-4">Product Not Found</h1>
-            <button
-              onClick={() => router.push("/")}
-              className="px-6 py-2 bg-black text-white rounded-lg font-bold"
-            >
-              Back to Home
-            </button>
-          </div>
-        </div>
-      </>
+      <div className="min-h-screen flex items-center justify-center text-white font-bold">
+        Product not found
+      </div>
     );
   }
 
-  const images = [product.ImageUrl1, product.ImageUrl2, product.ImageUrl3];
-  // Fixed size options (only one may be selected). Preselect S.
-  const sizeOptions = ["S","M","L","XL"];
+  const images = [
+    product.ImageUrl1,
+    product.ImageUrl2,
+    product.ImageUrl3,
+  ].filter(Boolean) as string[];
+
+  const nextImage = () =>
+    setImageIndex((prev) => (prev + 1) % images.length);
+
+  const prevImage = () =>
+    setImageIndex((prev) => (prev - 1 + images.length) % images.length);
+
+  // 🛒 Add to cart with quantity
+  const handleAddToCart = async () => {
+    if (!user?.email) {
+      router.push("/sign-in");
+      return;
+    }
+
+    const cartRef = collection(db, "Cart");
+
+    const q = query(
+      cartRef,
+      where("UserMail", "==", user.email),
+      where("ID", "==", product.ID),
+      where("Size", "==", selectedSize)
+    );
+
+    const snap = await getDocs(q);
+
+    if (!snap.empty) {
+      const docRef = snap.docs[0].ref;
+      const prevQty = snap.docs[0].data().Quantity || 0;
+
+      await updateDoc(docRef, {
+        Quantity: prevQty + quantity,
+        ["Added On"]: serverTimestamp(),
+      });
+    } else {
+      await addDoc(cartRef, {
+        ID: product.ID,
+        Quantity: quantity,
+        Size: selectedSize,
+        UserMail: user.email,
+        ["Added On"]: serverTimestamp(),
+      });
+    }
+
+    // Update cart badge
+    for (let i = 0; i < quantity; i++) {
+      addItem(String(product.ID));
+    }
+  };
 
   return (
     <>
-      <Navbar />
-      <main className="px-10 pt-32 pb-16 max-w-7xl mx-auto">
+      <div className="min-h-screen bg-black text-white px-12 pt-8 pb-20">
         <button
           onClick={() => router.back()}
-          className="mb-6 flex items-center gap-2 font-bold hover:underline"
+          className="mb-6 font-semibold hover:underline"
         >
           ← Back
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Image Gallery */}
-          <div className="space-y-4">
-            <div className="border-2 rounded-xl overflow-hidden aspect-square">
+        <div className="grid grid-cols-2 gap-16">
+          {/* IMAGE SECTION */}
+          <div>
+            <div className="relative bg-white rounded-xl p-6">
               <img
-                src={images[selectedImage]}
+                src={images[imageIndex]}
                 alt={product.Description}
-                className="w-full h-full object-cover"
+                className="w-full h-[520px] object-contain"
               />
+
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black text-white px-3 py-2 rounded-full"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black text-white px-3 py-2 rounded-full"
+                  >
+                    ›
+                  </button>
+                </>
+              )}
             </div>
-            <div className="grid grid-cols-3 gap-4">
-              {images.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedImage(idx)}
-                  className={`border-2 rounded-lg overflow-hidden aspect-square ${
-                    selectedImage === idx ? "border-black border-4" : ""
+
+            {/* THUMBNAILS */}
+            <div className="flex gap-4 mt-4">
+              {images.map((img, i) => (
+                <img
+                  key={i}
+                  src={img}
+                  onClick={() => setImageIndex(i)}
+                  className={`h-24 w-24 object-contain rounded cursor-pointer border-2 ${
+                    i === imageIndex ? "border-white" : "border-transparent"
                   }`}
-                >
-                  <img
-                    src={img}
-                    alt={`${product.Description} ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
+                />
               ))}
             </div>
           </div>
 
-          {/* Product Details */}
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-4xl font-extrabold mb-2">
-                {product.Description}
-              </h1>
-              <p className="text-gray-600 text-lg font-semibold">
-                {product.Product}
-              </p>
-            </div>
+          {/* DETAILS */}
+          <div>
+            <h1 className="text-4xl font-semibold mb-2">
+              {product.Description}
+            </h1>
 
+            <p className="text-gray-400 mb-6">{product.Product}</p>
 
-            <div className="text-3xl font-bold">
+            <p className="text-3xl font-semibold mb-6">
               ₹{product.Price}
-              {product.Customize && wantsCustomization && product.customprice && (
-                <span className="text-lg text-gray-600 ml-2">
-                  + ₹{product.customprice} (customization)
-                </span>
-              )}
-            </div>
+            </p>
 
-            {/* Customization Section */}
-            {product.Customize && (
-              <div className="space-y-4 border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="customize"
-                    checked={wantsCustomization}
-                    onChange={(e) => {
-                      setWantsCustomization(e.target.checked);
-                      if (!e.target.checked) {
-                        setCustomizationText("");
-                      }
-                    }}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <label htmlFor="customize" className="font-semibold text-gray-900">
-                    {product.CustomText || "Add customization"}
-                  </label>
-                  {product.customprice && (
-                    <span className="text-sm font-medium text-gray-600">
-                      (+₹{product.customprice})
-                    </span>
-                  )}
-                </div>
-                {wantsCustomization && (
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Enter your customization text..."
-                      value={customizationText}
-                      onChange={(e) => setCustomizationText(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      maxLength={50}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      {customizationText.length}/50 characters
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+            <p className="mb-4">
+              <span className="font-semibold">Material:</span>{" "}
+              {product.Material ?? "Premium Fabric"}
+            </p>
 
-            {/* Product Info */}
-            <div className="space-y-3 border-y-2 py-6">
-              <div className="flex gap-4 items-center">
-                <span className="font-bold w-24">Size:</span>
-                <div className="flex gap-2">
-                  {sizeOptions.map((size, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setSelectedSize(size)}
-                      className={`w-12 h-10 flex items-center justify-center rounded-lg font-bold border-2 transition-colors ${
-                        selectedSize === size
-                          ? "bg-black text-white border-black"
-                          : "bg-white text-black border-gray-300 hover:bg-gray-100"
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-2 text-sm text-gray-600">In cart: {inCartCount}</div>
-              </div>
-              <div className="flex gap-4">
-                <span className="font-bold w-24">Material:</span>
-                <span className="font-semibold">{product.Material}</span>
-              </div>
-              <div className="flex gap-4">
-                <span className="font-bold w-24">Category:</span>
-                <span className="font-semibold">{product.Product}</span>
+            {/* ✅ QUANTITY */}
+            <div className="mb-6">
+              <p className="font-semibold mb-2">Quantity:</p>
+              <div className="flex items-center gap-6 border rounded-full w-fit px-6 py-3">
+                <button
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="text-xl font-bold"
+                >
+                  −
+                </button>
+                <span className="font-semibold">{quantity}</span>
+                <button
+                  onClick={() => setQuantity((q) => q + 1)}
+                  className="text-xl font-bold"
+                >
+                  +
+                </button>
               </div>
             </div>
 
-            {/* Tags removed as requested */}
-
-            {/* Add to Cart */}
-            <div className="space-y-4 pt-6">
-              <div className="flex items-center gap-6">
-                <span className="font-bold">Add quantity:</span>
-                <div className="flex items-center gap-4">
+            {/* SIZE */}
+            <div className="mb-6">
+              <p className="font-semibold mb-2">Size:</p>
+              <div className="flex gap-3">
+                {["S", "M", "L", "XL"].map((size) => (
                   <button
-                    onClick={() => setPendingQty((p) => Math.max(1, p - 1))}
-                    className="px-4 py-2 border-2 rounded-lg font-bold hover:bg-gray-100"
-                    type="button"
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`px-4 py-2 rounded border font-semibold ${
+                      selectedSize === size
+                        ? "bg-white text-black"
+                        : "border-white text-white"
+                    }`}
                   >
-                    −
+                    {size}
                   </button>
-                  <span className="min-w-[40px] text-center text-xl font-extrabold">
-                    {pendingQty}
-                  </span>
-                  <button
-                    onClick={() => setPendingQty((p) => p + 1)}
-                    className="px-4 py-2 bg-black text-white rounded-lg font-bold hover:bg-gray-800"
-                    type="button"
-                  >
-                    +
-                  </button>
-                </div>
+                ))}
               </div>
-
-              <button
-                onClick={async () => {
-                  if (!selectedSize) return;
-                  if (product.Customize && wantsCustomization && !customizationText.trim()) {
-                    alert("Please enter your customization text");
-                    return;
-                  }
-                  
-                  // optimistic UI
-                  setInCartCount((p) => p + pendingQty);
-
-                  const cartItemData = {
-                    ["Added On"]: serverTimestamp(),
-                    ID: product.ID,
-                    Quantity: pendingQty,
-                    Size: selectedSize,
-                    UserMail: user?.email,
-                    ...(wantsCustomization && {
-                      isCustomized: true,
-                      customizationText: customizationText.trim(),
-                      customPrice: product.customprice || 0
-                    })
-                  };
-
-                  // If user is signed in, persist to Firestore Cart collection
-                  if (user && user.email) {
-                    try {
-                      const colRef = collection(db, "Cart");
-                      // For customized items, always create a new cart entry
-                      if (wantsCustomization) {
-                        await addDoc(colRef, cartItemData);
-                      } else {
-                        // For non-customized items, check if similar item exists
-                        const q = query(colRef, where("UserMail", "==", user.email), where("ID", "==", product.ID), where("Size", "==", selectedSize), where("isCustomized", "==", false));
-                        const snap = await getDocs(q);
-                        if (!snap.empty) {
-                          const d = snap.docs[0];
-                          const existing = d.data() as any;
-                          const newQty = (existing.Quantity || 0) + pendingQty;
-                          await updateDoc(d.ref, { Quantity: newQty, ["Added On"]: serverTimestamp() });
-                        } else {
-                          await addDoc(colRef, { ...cartItemData, isCustomized: false });
-                        }
-                      }
-                      // reflect in local context
-                      for (let i = 0; i < pendingQty; i++) addItem(productId);
-                      setPendingQty(1);
-                      setWantsCustomization(false);
-                      setCustomizationText("");
-                    } catch (e) {
-                      console.error("Failed to write cart to Firestore:", e);
-                      // rollback optimistic count
-                      setInCartCount((p) => Math.max(0, p - pendingQty));
-                    }
-                    return;
-                  }
-
-                  // guest: update cookie and local context
-                  try {
-                    const guestArr = readGuestCartFromCookie();
-                    const guestCartItem = {
-                      ID: product.ID,
-                      Quantity: pendingQty,
-                      Size: selectedSize,
-                      AddedOn: new Date().toISOString(),
-                      ...(wantsCustomization && {
-                        isCustomized: true,
-                        customizationText: customizationText.trim(),
-                        customPrice: product.customprice || 0
-                      })
-                    };
-                    
-                    if (wantsCustomization) {
-                      // Always add as new item for customized products
-                      guestArr.push(guestCartItem);
-                    } else {
-                      // For non-customized items, check if similar item exists
-                      const idx = guestArr.findIndex((it) => 
-                        String(it.ID) === String(product.ID) && 
-                        (it.Size || "S") === selectedSize &&
-                        !it.isCustomized
-                      );
-                      if (idx >= 0) {
-                        guestArr[idx].Quantity = Number(guestArr[idx].Quantity || 0) + pendingQty;
-                        guestArr[idx].AddedOn = new Date().toISOString();
-                      } else {
-                        guestArr.push({ ...guestCartItem, isCustomized: false });
-                      }
-                    }
-                    
-                    writeGuestCartToCookie(guestArr);
-                    for (let i = 0; i < pendingQty; i++) addItem(productId);
-                    setPendingQty(1);
-                    setWantsCustomization(false);
-                    setCustomizationText("");
-                  } catch (e) {
-                    console.error("Failed to update guest cookie:", e);
-                    setInCartCount((p) => Math.max(0, p - pendingQty));
-                  }
-                }}
-                className={`w-full py-4 bg-black text-white rounded-lg font-bold text-lg hover:bg-gray-800 transition-colors ${!selectedSize ? "opacity-50 cursor-not-allowed" : ""}`}
-                disabled={!selectedSize}
-              >
-                Add to Cart
-              </button>
-              <button
-                onClick={() => {
-                  if (product.Customize && wantsCustomization && !customizationText.trim()) {
-                    alert("Please enter your customization text");
-                    return;
-                  }
-                  
-                  // Navigate to checkout with a buyNow payload so only this item is checked out
-                  const payload = {
-                    ID: product.ID,
-                    Quantity: pendingQty,
-                    Size: selectedSize,
-                    ...(wantsCustomization && {
-                      isCustomized: true,
-                      customizationText: customizationText.trim(),
-                      customPrice: product.customprice || 0
-                    })
-                  };
-                  const qs = encodeURIComponent(JSON.stringify(payload));
-                  router.push(`/checkout?buyNow=${qs}`);
-                }}
-                className={`w-full py-4 bg-indigo-600 text-white rounded-lg font-bold text-lg hover:bg-indigo-700 transition-colors mt-2 ${!selectedSize || (product.Customize && wantsCustomization && !customizationText.trim()) ? "opacity-50 cursor-not-allowed" : ""}`}
-                disabled={!selectedSize || (product.Customize && wantsCustomization && !customizationText.trim())}
-              >
-                Buy Now
-              </button>
             </div>
+
+            <button
+              onClick={handleAddToCart}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 py-4 rounded-xl font-semibold mb-4"
+            >
+              Add to Cart
+            </button>
+
+            <button
+              onClick={() => {
+                handleAddToCart();
+                router.push("/checkout");
+              }}
+              className="w-full bg-indigo-500 hover:bg-indigo-600 py-4 rounded-xl font-semibold"
+            >
+              Buy Now
+            </button>
           </div>
         </div>
-      </main>
+      </div>
+      {/* RELATED PRODUCTS */}
+{relatedProducts.length > 0 && (
+  <div className="mt-24">
+    <h2 className="text-2xl font-semibold mb-6">Related Products</h2>
+
+    <div className="grid grid-cols-4 gap-6">
+      {relatedProducts.map((rp) => (
+        <div
+          key={rp.ID}
+          onClick={() =>
+            router.push(`/product/${encodeURIComponent(rp.Description)}`)
+          }
+          className="cursor-pointer bg-white rounded-xl p-4 text-black hover:scale-105 transition"
+        >
+          <img
+            src={rp.ImageUrl1}
+            alt={rp.Description}
+            className="h-48 w-full object-contain mb-3"
+          />
+          <p className="font-semibold text-sm">{rp.Description}</p>
+          <p className="font-bold mt-1">₹{rp.Price}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+      <ReviewCarousel />
     </>
   );
 }
