@@ -430,7 +430,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-8 checkout-black-text">
       <div className="max-w-4xl mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
@@ -565,4 +565,16 @@ export default function CheckoutPage() {
       </div>
     </div>
   );
+}
+
+// Force black text for this page only
+// This style will override the global white text
+if (typeof window !== "undefined") {
+  const styleId = "checkout-black-text-style";
+  if (!document.getElementById(styleId)) {
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.innerHTML = `.checkout-black-text, .checkout-black-text * { color: #000 !important; }`;
+    document.head.appendChild(style);
+  }
 }

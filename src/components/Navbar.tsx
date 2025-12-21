@@ -165,14 +165,13 @@ export default function Navbar() {
         />
         {/* Sidebar */}
         <div
-          className={`fixed left-0 z-[60] bg-white shadow-xl transition-transform duration-300 ease-in-out ${
+          className={`fixed left-0 z-[60] bg-white shadow-xl transition-transform duration-300 ease-in-out w-full md:w-[420px] lg:w-[480px] ${
             menuOpen ? "translate-x-0" : "-translate-x-full"
           }`}
           style={{
             top: menuTop,
             height: `calc(100vh - ${menuTop}px)`,
-            width: '100vw',
-            maxWidth: '100vw',
+            // width is controlled by Tailwind classes: full on small screens, constrained on md+
           }}
         >
           <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
