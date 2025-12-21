@@ -467,18 +467,16 @@ export default function Navbar() {
                 </div>
               </button>
             </div>
-            {/* Brand Name - vertically centered for mobile */}
-            <div className="flex-1 flex items-center justify-center h-full">
-              <div className="w-full flex justify-center items-center">
-                <Link
-                  href="/"
-                  className="text-lg sm:text-xl md:text-2xl font-bold hover:text-gray-300 transition-colors mt-2 sm:mt-0 text-center"
-                  style={{ lineHeight: '1', paddingTop: '10px', paddingBottom: '2px' }}
-                  onClick={(e) => { e.preventDefault(); window.location.href = '/'; }}
-                >
-                  Ballerz
-                </Link>
-              </div>
+            {/* Brand Name - absolutely centered horizontally */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none select-none">
+              <Link
+                href="/"
+                className="text-lg sm:text-xl md:text-2xl font-bold hover:text-gray-300 transition-colors text-center pointer-events-auto select-auto"
+                style={{ lineHeight: '1', paddingTop: '10px', paddingBottom: '2px' }}
+                onClick={(e) => { e.preventDefault(); window.location.href = '/'; }}
+              >
+                Ballerz
+              </Link>
             </div>
             {/* Right side: Only show search and cart on mobile */}
             <div className="flex items-center gap-2 sm:gap-3 md:gap-4 h-full">
