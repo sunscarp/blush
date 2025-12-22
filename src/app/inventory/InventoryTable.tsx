@@ -36,7 +36,23 @@ export default function InventoryTable() {
 
   // Add modal visibility and form state
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
-  const [form, setForm] = useState({
+  type FormState = {
+    Description: string;
+    ID: string;
+    ImageUrl1: string;
+    ImageUrl2: string;
+    ImageUrl3: string;
+    Material: string;
+    Price: string;
+    Product: string;
+    Size: string;
+    Tag: string;
+    CustomText: string;
+    Customize: boolean;
+    OriginalPrice: string;
+    customprice: string;
+  };
+  const [form, setForm] = useState<FormState>({
     Description: "",
     ID: "",
     ImageUrl1: "",
@@ -93,7 +109,7 @@ export default function InventoryTable() {
   }
 
 
-  function updateForm<K extends keyof typeof form>(k: K, v: string) {
+  function updateForm<K extends keyof FormState>(k: K, v: FormState[K]) {
     setForm((s) => ({ ...s, [k]: v }));
   }
 
@@ -175,7 +191,7 @@ export default function InventoryTable() {
                     <div className="text-sm"><strong className="text-slate-600">Original Price:</strong> <span className="text-rose-600">{it?.OriginalPrice ?? "-"}</span></div>
                     <div className="text-sm"><strong className="text-slate-600">Custom Price:</strong> <span className="text-indigo-600">{it?.customprice ?? "-"}</span></div>
                     <div className="text-sm"><strong className="text-slate-600">Size:</strong> {it?.Size ?? "-"}</div>
-                    <div className="text-sm"><strong className="text-slate-600">Material:</strong> {it?.Material ?? "-"}</span></div>
+                    <div className="text-sm"><strong className="text-slate-600">Material:</strong> {it?.Material ?? "-"}</div>
                     <div className="text-sm"><strong className="text-slate-600">Custom Text:</strong> {it?.CustomText ?? "-"}</div>
                     <div className="text-sm"><strong className="text-slate-600">Customize:</strong> {it?.Customize ? "Yes" : "No"}</div>
                   </div>
