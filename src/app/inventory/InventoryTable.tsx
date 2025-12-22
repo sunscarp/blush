@@ -47,6 +47,10 @@ export default function InventoryTable() {
     Product: "",
     Size: "M",
     Tag: "",
+    CustomText: "",
+    Customize: false,
+    OriginalPrice: "",
+    customprice: "",
   });
 
   // No filters / add-item UI — render whatever is in `inventory`
@@ -113,13 +117,17 @@ export default function InventoryTable() {
         Product: form.Product || "",
         Size: form.Size || "",
         Tag: form.Tag || "",
+        CustomText: form.CustomText || "",
+        Customize: !!form.Customize,
+        OriginalPrice: form.OriginalPrice ? Number(form.OriginalPrice) : undefined,
+        customprice: form.customprice ? Number(form.customprice) : undefined,
         createdAt: serverTimestamp(),
       };
       // remove undefined fields
       Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
       await addDoc(collection(db!, 'inventory'), payload);
       setShowAddModal(false);
-      setForm({ Description: "", ID: "", ImageUrl1: "", ImageUrl2: "", ImageUrl3: "", Material: "", Price: "", Product: "", Size: "M", Tag: "" });
+      setForm({ Description: "", ID: "", ImageUrl1: "", ImageUrl2: "", ImageUrl3: "", Material: "", Price: "", Product: "", Size: "M", Tag: "", CustomText: "", Customize: false, OriginalPrice: "", customprice: "" });
       setError(null);
     } catch (e: any) {
       setError(String(e?.message ?? e));
@@ -133,7 +141,7 @@ export default function InventoryTable() {
         <div className="mb-2">
           <h3 className="text-sm font-semibold text-indigo-800">Inventory <span className="text-xs text-slate-500">({filteredItems.length})</span></h3>
           <div className="mt-2">
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search tags (e.g. chelsea)" className="w-full max-w-sm rounded border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search tags (e.g. chelsea)" className="w-full max-w-sm rounded border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" />
           </div>
         </div>
 
@@ -164,8 +172,12 @@ export default function InventoryTable() {
                   <div className="text-xs text-slate-400 mt-2">Created: {formatValue(it?.createdAt)}</div>
                   <div className="mt-3 flex flex-wrap gap-4 text-sm text-slate-700">
                     <div className="text-sm"><strong className="text-slate-600">Price:</strong> <span className="text-teal-600">{it?.Price ?? "-"}</span></div>
+                    <div className="text-sm"><strong className="text-slate-600">Original Price:</strong> <span className="text-rose-600">{it?.OriginalPrice ?? "-"}</span></div>
+                    <div className="text-sm"><strong className="text-slate-600">Custom Price:</strong> <span className="text-indigo-600">{it?.customprice ?? "-"}</span></div>
                     <div className="text-sm"><strong className="text-slate-600">Size:</strong> {it?.Size ?? "-"}</div>
-                    <div className="text-sm"><strong className="text-slate-600">Material:</strong> {it?.Material ?? "-"}</div>
+                    <div className="text-sm"><strong className="text-slate-600">Material:</strong> {it?.Material ?? "-"}</span></div>
+                    <div className="text-sm"><strong className="text-slate-600">Custom Text:</strong> {it?.CustomText ?? "-"}</div>
+                    <div className="text-sm"><strong className="text-slate-600">Customize:</strong> {it?.Customize ? "Yes" : "No"}</div>
                   </div>
                 </div>
               </div>
@@ -189,20 +201,20 @@ export default function InventoryTable() {
             <form onSubmit={(e) => { handleAddSubmit(e); }} className="mt-4 space-y-3">
               <div>
                 <label className="block text-xs text-slate-600">Product</label>
-                <input className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200" value={form.Product} onChange={(e) => updateForm('Product', e.target.value)} />
+                <input className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.Product} onChange={(e) => updateForm('Product', e.target.value)} />
               </div>
               <div>
                 <label className="block text-xs text-slate-600">Description</label>
-                <textarea className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200" value={form.Description} onChange={(e) => updateForm('Description', e.target.value)} />
+                <textarea className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.Description} onChange={(e) => updateForm('Description', e.target.value)} />
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block text-xs text-slate-600">ImageUrl1</label>
-                  <input className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200" value={form.ImageUrl1} onChange={(e) => updateForm('ImageUrl1', e.target.value)} />
+                  <input className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.ImageUrl1} onChange={(e) => updateForm('ImageUrl1', e.target.value)} />
                 </div>
                 <div>
                   <label className="block text-xs text-slate-600">ImageUrl2</label>
-                  <input className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200" value={form.ImageUrl2} onChange={(e) => updateForm('ImageUrl2', e.target.value)} />
+                  <input className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.ImageUrl2} onChange={(e) => updateForm('ImageUrl2', e.target.value)} />
                 </div>
                 <div>
                   <label className="block text-xs text-slate-600">ImageUrl3</label>
@@ -212,11 +224,11 @@ export default function InventoryTable() {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-xs text-slate-600">Price</label>
-                  <input type="number" className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200" value={form.Price} onChange={(e) => updateForm('Price', e.target.value)} />
+                  <input type="number" className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.Price} onChange={(e) => updateForm('Price', e.target.value)} />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-600">Material</label>
-                  <input className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200" value={form.Material} onChange={(e) => updateForm('Material', e.target.value)} />
+                  <label className="block text-xs text-slate-600">Original Price</label>
+                  <input type="number" className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.OriginalPrice} onChange={(e) => updateForm('OriginalPrice', e.target.value)} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -231,9 +243,17 @@ export default function InventoryTable() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-600">Tags (semicolon-separated)</label>
-                  <input className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200" value={form.Tag} onChange={(e) => updateForm('Tag', e.target.value)} />
+                  <label className="block text-xs text-slate-600">Custom Price</label>
+                  <input type="number" className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.customprice} onChange={(e) => updateForm('customprice', e.target.value)} />
                 </div>
+              </div>
+              <div>
+                <label className="block text-xs text-slate-600">Custom Text</label>
+                <input className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.CustomText} onChange={(e) => updateForm('CustomText', e.target.value)} />
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="customize" checked={form.Customize} onChange={e => updateForm('Customize', e.target.checked)} />
+                <label htmlFor="customize" className="text-xs text-slate-600">Customize</label>
               </div>
               <div className="flex justify-end">
                 <button type="submit" className="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">Add Item</button>
