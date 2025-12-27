@@ -3,8 +3,10 @@
 @import "tailwindcss";
 
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
+  --background: #ffffff;
+  --foreground: #000000;
+  --primary-pink: #ffd1dc;
+  --baby-pink: #ffb6c1;
 }
 
 * {
@@ -12,8 +14,8 @@
 }
 
 body {
-  background: #000000;   /* Black background */
-  color: #ffffff;       /* White text */
+  background: #ffffff;   /* White background */
+  color: #000000;       /* Black text */
   font-family: 'Montserrat', var(--font-montserrat), sans-serif;
   font-weight: 400;
 }
