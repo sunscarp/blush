@@ -357,12 +357,31 @@ function ShopContent() {
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                 {sorted.map(p => {
                 const oldPrice = (p as any).OldPrice ?? (p as any).MSRP ?? null;
-                const soldOut = !!(p as any).SoldOut;
+                const stock = (p as any).Stock;
+                const outOfStock = stock !== undefined && Number(stock) === 0;
+                const soldOut = !!(p as any).SoldOut || outOfStock;
                 const savePct = oldPrice && oldPrice > p.Price ? Math.round(((oldPrice - p.Price) / oldPrice) * 100) : null;
                 return (
                 <Link key={p.ID} href={`/product/${encodeURIComponent(p.Description)}`} className="block relative p-0 font-light hover:shadow-sm transition-colors hover:-translate-y-0.5 cursor-pointer overflow-hidden">
-                  {soldOut && (<span className="absolute top-3 left-3 bg-[#fff5f7] text-gray-800 text-xs font-semibold px-3 py-1 rounded-full">Sold out</span>)}
-                  {savePct && !soldOut && (<span className="absolute top-3 left-3 bg-[#ffd1dc] text-black text-xs font-semibold px-3 py-1 rounded-full">Save {savePct}%</span>)}
+                  {outOfStock && (
+                    <span
+                      className="absolute top-5 left-[-10px] bg-red-200 text-red-800 text-base font-bold px-4 py-1.5 rounded-full shadow-lg"
+                      style={{
+                        transform: 'rotate(-20deg) scale(1.05)',
+                        zIndex: 10,
+                        border: '2px solid #f87171',
+                        letterSpacing: '1.5px',
+                      }}
+                    >
+                      Out of Stock
+                    </span>
+                  )}
+                  {!outOfStock && soldOut && (
+                    <span className="absolute top-3 left-3 bg-[#fff5f7] text-gray-800 text-xs font-semibold px-3 py-1 rounded-full">Sold out</span>
+                  )}
+                  {savePct && !soldOut && (
+                    <span className="absolute top-3 left-3 bg-[#ffd1dc] text-black text-xs font-semibold px-3 py-1 rounded-full">Save {savePct}%</span>
+                  )}
                   <div className="w-full overflow-hidden aspect-[4/5]">
                     <img
                       src={p.ImageUrl1 ? p.ImageUrl1 : "/placeholder.png"}
@@ -375,7 +394,9 @@ function ShopContent() {
                     <h3 className="text-sm md:text-lg lg:text-xl font-normal text-gray-900 leading-tight">{p.Description}</h3>
                     <div className="mt-2 flex items-baseline gap-3">
                       <div className="text-sm md:text-lg font-bold text-gray-900">{formatCurrency(p.Price)}</div>
-                      {oldPrice && oldPrice > p.Price && (<div className="text-sm text-gray-500 line-through">{formatCurrency(oldPrice)}</div>)}
+                      {oldPrice && oldPrice > p.Price && (
+                        <div className="text-sm text-gray-500 line-through">{formatCurrency(oldPrice)}</div>
+                      )}
                     </div>
                   </div>
                 </Link>

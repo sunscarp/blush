@@ -8,6 +8,7 @@ import {
   addDoc,
   deleteDoc,
   doc as firestoreDoc,
+  updateDoc,
   serverTimestamp,
 } from "firebase/firestore";
 
@@ -36,6 +37,8 @@ export default function InventoryTable() {
 
   // Add modal visibility and form state
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   type FormState = {
     Description: string;
     ID: string;
@@ -51,6 +54,7 @@ export default function InventoryTable() {
     Customize: boolean;
     OriginalPrice: string;
     customprice: string;
+    Stock: string;
   };
   const [form, setForm] = useState<FormState>({
     Description: "",
@@ -67,6 +71,7 @@ export default function InventoryTable() {
     Customize: false,
     OriginalPrice: "",
     customprice: "",
+    Stock: "",
   });
 
   // No filters / add-item UI — render whatever is in `inventory`
@@ -137,13 +142,68 @@ export default function InventoryTable() {
         Customize: !!form.Customize,
         OriginalPrice: form.OriginalPrice ? Number(form.OriginalPrice) : undefined,
         customprice: form.customprice ? Number(form.customprice) : undefined,
+        Stock: form.Stock ? Number(form.Stock) : undefined,
         createdAt: serverTimestamp(),
       };
       // remove undefined fields
       Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
       await addDoc(collection(db!, 'inventory'), payload);
       setShowAddModal(false);
-      setForm({ Description: "", ID: "", ImageUrl1: "", ImageUrl2: "", ImageUrl3: "", Material: "", Price: "", Product: "", Size: "M", Tag: "", CustomText: "", Customize: false, OriginalPrice: "", customprice: "" });
+      setForm({ Description: "", ID: "", ImageUrl1: "", ImageUrl2: "", ImageUrl3: "", Material: "", Price: "", Product: "", Size: "M", Tag: "", CustomText: "", Customize: false, OriginalPrice: "", customprice: "", Stock: "" });
+      setError(null);
+    } catch (e: any) {
+      setError(String(e?.message ?? e));
+    }
+  }
+
+  function openEditModal(item: Item) {
+    setEditingId(item.id ?? null);
+    setForm({
+      Description: item.Description ?? "",
+      ID: item.ID ? String(item.ID) : (item.id ?? ""),
+      ImageUrl1: item.ImageUrl1 ?? "",
+      ImageUrl2: item.ImageUrl2 ?? "",
+      ImageUrl3: item.ImageUrl3 ?? "",
+      Material: item.Material ?? "",
+      Price: item.Price ? String(item.Price) : "",
+      Product: item.Product ?? "",
+      Size: item.Size ?? "M",
+      Tag: item.Tag ?? "",
+      CustomText: item.CustomText ?? "",
+      Customize: !!item.Customize,
+      OriginalPrice: item.OriginalPrice ? String(item.OriginalPrice) : "",
+      customprice: item.customprice ? String(item.customprice) : "",
+      Stock: item.Stock !== undefined ? String(item.Stock) : "",
+    });
+    setShowEditModal(true);
+  }
+
+  async function handleEditSubmit(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!db) return setError('Firestore not initialized');
+    if (!editingId) return setError('No document selected for edit');
+    try {
+      const payload: any = {
+        Description: form.Description || "",
+        ID: form.ID ? Number(form.ID) : undefined,
+        ImageUrl1: form.ImageUrl1 || "",
+        ImageUrl2: form.ImageUrl2 || "",
+        ImageUrl3: form.ImageUrl3 || "",
+        Material: form.Material || "",
+        Price: form.Price ? Number(form.Price) : undefined,
+        Product: form.Product || "",
+        Size: form.Size || "M",
+        Tag: form.Tag || "",
+        CustomText: form.CustomText || "",
+        Customize: !!form.Customize,
+        OriginalPrice: form.OriginalPrice ? Number(form.OriginalPrice) : undefined,
+        customprice: form.customprice ? Number(form.customprice) : undefined,
+        Stock: form.Stock ? Number(form.Stock) : undefined,
+      };
+      Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
+      await updateDoc(firestoreDoc(db!, 'inventory', editingId), payload);
+      setShowEditModal(false);
+      setEditingId(null);
       setError(null);
     } catch (e: any) {
       setError(String(e?.message ?? e));
@@ -170,6 +230,7 @@ export default function InventoryTable() {
             const img = it?.ImageUrl1 || it?.ImageUrl2 || it?.ImageUrl3 || "/favicon.ico";
             return (
               <div key={it.id ?? it.ID ?? it.Product} className="relative flex gap-4 rounded-lg border p-4 bg-slate-50 border-slate-200 shadow-sm">
+                <button onClick={(e) => { e.stopPropagation(); openEditModal(it); }} aria-label="Edit item" className="absolute right-2 top-2 z-20 rounded px-2 py-1 text-xs text-slate-700 bg-white/90 hover:bg-slate-50 border border-slate-100">Edit</button>
                 <button onClick={(e) => { e.stopPropagation(); handleDelete(it.id); }} aria-label="Delete item" className="absolute right-2 bottom-2 z-20 rounded px-2 py-1 text-xs text-red-600 bg-white/90 hover:bg-red-50 border border-red-100">Delete</button>
                 <div className="w-36 flex-shrink-0">
                   <img src={img} alt={it?.Product ?? "item"} className="h-28 w-full object-cover rounded" />
@@ -247,7 +308,7 @@ export default function InventoryTable() {
                   <input type="number" className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.OriginalPrice} onChange={(e) => updateForm('OriginalPrice', e.target.value)} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block text-xs text-slate-600">Size</label>
                   <select className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200" value={form.Size} onChange={(e) => updateForm('Size', e.target.value)}>
@@ -262,6 +323,10 @@ export default function InventoryTable() {
                   <label className="block text-xs text-slate-600">Custom Price</label>
                   <input type="number" className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.customprice} onChange={(e) => updateForm('customprice', e.target.value)} />
                 </div>
+                <div>
+                  <label className="block text-xs text-slate-600">Stock</label>
+                  <input type="number" className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.Stock} onChange={(e) => updateForm('Stock', e.target.value)} />
+                </div>
               </div>
               <div>
                 <label className="block text-xs text-slate-600">Custom Text</label>
@@ -273,6 +338,83 @@ export default function InventoryTable() {
               </div>
               <div className="flex justify-end">
                 <button type="submit" className="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">Add Item</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Edit modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-black/30 to-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-2xl ring-1 ring-indigo-50">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-indigo-800">Edit Inventory Item</h3>
+              <button onClick={() => { setShowEditModal(false); setEditingId(null); }} className="text-sm text-slate-500">Close</button>
+            </div>
+            <form onSubmit={(e) => { handleEditSubmit(e); }} className="mt-4 space-y-3">
+              <div>
+                <label className="block text-xs text-slate-600">Product</label>
+                <input className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.Product} onChange={(e) => updateForm('Product', e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-600">Description</label>
+                <textarea className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.Description} onChange={(e) => updateForm('Description', e.target.value)} />
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-xs text-slate-600">ImageUrl1</label>
+                  <input className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.ImageUrl1} onChange={(e) => updateForm('ImageUrl1', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-600">ImageUrl2</label>
+                  <input className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.ImageUrl2} onChange={(e) => updateForm('ImageUrl2', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-600">ImageUrl3</label>
+                  <input className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200" value={form.ImageUrl3} onChange={(e) => updateForm('ImageUrl3', e.target.value)} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs text-slate-600">Price</label>
+                  <input type="number" className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.Price} onChange={(e) => updateForm('Price', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-600">Original Price</label>
+                  <input type="number" className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.OriginalPrice} onChange={(e) => updateForm('OriginalPrice', e.target.value)} />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-xs text-slate-600">Size</label>
+                  <select className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200" value={form.Size} onChange={(e) => updateForm('Size', e.target.value)}>
+                    <option value="S">S</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                    <option value="XXL">XXL</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-600">Custom Price</label>
+                  <input type="number" className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.customprice} onChange={(e) => updateForm('customprice', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-600">Stock</label>
+                  <input type="number" className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.Stock} onChange={(e) => updateForm('Stock', e.target.value)} />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-slate-600">Custom Text</label>
+                <input className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.CustomText} onChange={(e) => updateForm('CustomText', e.target.value)} />
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="customize-edit" checked={form.Customize} onChange={e => updateForm('Customize', e.target.checked)} />
+                <label htmlFor="customize-edit" className="text-xs text-slate-600">Customize</label>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => { setShowEditModal(false); setEditingId(null); }} className="rounded border px-4 py-2 text-sm text-slate-600">Cancel</button>
+                <button type="submit" className="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">Save Changes</button>
               </div>
             </form>
           </div>
