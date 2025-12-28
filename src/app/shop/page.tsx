@@ -11,7 +11,8 @@ type Product = {
   Description: string;
   ImageUrl1: string;
   Price: number;
-  Product: string;
+  ProductName: string;
+  Category?: string;
 };
 
 function ShopContent() {
@@ -45,7 +46,8 @@ function ShopContent() {
   }, []);
 
   const filtered = products.filter(p => {
-    if (filter && p.Product !== filter) return false;
+    // match using the Firestore 'Category' field
+    if (filter && (p.Category ?? null) !== filter) return false;
     if (search && !p.Description.toLowerCase().includes(search)) return false;
     return true;
   });
@@ -57,8 +59,9 @@ function ShopContent() {
     return s;
   })();
 
-  const defaultCategories = ["Short Dresses", "Purses", "Earrings"];
-  const categories = Array.from(new Set([...defaultCategories, ...products.map(p => p.Product)]));
+  // only include the explicit categories you asked for and categories from data
+  const defaultCategories = ["Party Wear Dresses", "Short Dresses", "Purses", "Earrings"];
+  const categories = Array.from(new Set([...defaultCategories, ...products.map(p => p.Category ?? "")]));
 
   const subcategoryMap: Record<string, { label: string; value: string }[]> = {
     Dresses: [
@@ -120,6 +123,13 @@ function ShopContent() {
                 </button> */}
 
                 <button
+                  onClick={() => { setFilter("Party Wear Dresses"); setSelectedSubcategory("Party Wear Dresses"); }}
+                  className={`w-full text-left px-2 py-1 rounded-md text-sm ${selectedSubcategory === "Party Wear Dresses" ? 'bg-[#ffd1dc] text-black' : 'text-gray-800 hover:bg-[#fff0f4]'}`}
+                >
+                  Party Wear Dresses
+                </button>
+
+                <button
                   onClick={() => { setFilter("Short Dresses"); setSelectedSubcategory("Short Dresses"); }}
                   className={`w-full text-left px-2 py-1 rounded-md text-sm ${selectedSubcategory === "Short Dresses" ? 'bg-[#ffd1dc] text-black' : 'text-gray-800 hover:bg-[#fff0f4]'}`}
                 >
@@ -127,7 +137,7 @@ function ShopContent() {
                 </button>
 
                 {/* Other categories from your existing data */}
-                  {categories.filter(c => !["Party Dresses", "Short Dresses", "Purses", "Earrings"].includes(c)).map(c => (
+                  {categories.filter(c => c && !["Party Wear Dresses", "Short Dresses", "Purses", "Earrings"].includes(c)).map(c => (
                   <button
                     key={c}
                     onClick={() => { setFilter(c); setSelectedSubcategory(c); }}
@@ -238,13 +248,20 @@ function ShopContent() {
                     </button>
 
                     <button
+                      onClick={() => { setFilter("Party Wear Dresses"); setSelectedSubcategory("Party Wear Dresses"); setShowFilterPopover(false); }}
+                      className={`w-full text-left px-2 py-1 rounded-md text-sm ${selectedSubcategory === "Party Wear Dresses" ? 'bg-[#ffd1dc] text-black' : 'text-gray-800 hover:bg-[#fff0f4]'}`}
+                    >
+                      Party Wear Dresses
+                    </button>
+
+                    <button
                       onClick={() => { setFilter("Short Dresses"); setSelectedSubcategory("Short Dresses"); setShowFilterPopover(false); }}
                       className={`w-full text-left px-2 py-1 rounded-md text-sm ${selectedSubcategory === "Short Dresses" ? 'bg-[#ffd1dc] text-black' : 'text-gray-800 hover:bg-[#fff0f4]'}`}
                     >
                       Short Dresses
                     </button>
 
-                    {categories.filter(c => !["Party Dresses", "Short Dresses", "Purses", "Earrings"].includes(c)).map(c => (
+                    {categories.filter(c => c && !["Party Wear Dresses", "Short Dresses", "Purses", "Earrings"].includes(c)).map(c => (
                       <button
                         key={c}
                         onClick={() => { setFilter(c); setSelectedSubcategory(c); setShowFilterPopover(false); }}
@@ -362,7 +379,7 @@ function ShopContent() {
                 const soldOut = !!(p as any).SoldOut || outOfStock;
                 const savePct = oldPrice && oldPrice > p.Price ? Math.round(((oldPrice - p.Price) / oldPrice) * 100) : null;
                 return (
-                <Link key={p.ID} href={`/product/${encodeURIComponent(p.Description)}`} className="block relative p-0 font-light hover:shadow-sm transition-colors hover:-translate-y-0.5 cursor-pointer overflow-hidden">
+                <Link key={p.ID} href={`/product/${encodeURIComponent(p.ProductName)}`} className="block relative p-0 font-light hover:shadow-sm transition-colors hover:-translate-y-0.5 cursor-pointer overflow-hidden">
                   {outOfStock && (
                     <span
                       className="absolute top-5 left-[-10px] bg-red-200 text-red-800 text-base font-bold px-4 py-1.5 rounded-full shadow-lg"
@@ -385,13 +402,13 @@ function ShopContent() {
                   <div className="w-full overflow-hidden aspect-[4/5]">
                     <img
                       src={p.ImageUrl1 ? p.ImageUrl1 : "/placeholder.png"}
-                      alt={p.Description}
+                      alt={p.ProductName}
                       className="w-full h-full object-cover"
                     />
                   </div>
 
                   <div className="py-2 px-1">
-                    <h3 className="text-sm md:text-lg lg:text-xl font-normal text-gray-900 leading-tight">{p.Description}</h3>
+                    <h3 className="text-sm md:text-lg lg:text-xl font-normal text-gray-900 leading-tight">{p.ProductName}</h3>
                     <div className="mt-2 flex items-baseline gap-3">
                       <div className="text-sm md:text-lg font-bold text-gray-900">{formatCurrency(p.Price)}</div>
                       {oldPrice && oldPrice > p.Price && (

@@ -22,6 +22,7 @@ type Product = {
   Product: string;
   Price: number;
   Material?: string;
+  ShortTruction?: string;
   ImageUrl1?: string;
   ImageUrl2?: string;
   ImageUrl3?: string;
@@ -492,6 +493,15 @@ export default function ProductPage() {
                   {availableStock === 0 ? 'Sold Out' : 'Add to Cart'}
                 </button>
               </div>
+              {/* Description & Short Instructions (shown below Quantity) */}
+              <div className="mt-4 text-sm text-gray-800">
+                <h3 className="font-semibold mb-1">Description</h3>
+                <p className="text-sm text-gray-700">{product.Description}</p>
+
+                <h3 className="font-semibold mt-3 mb-1">Short-Tructions</h3>
+                <p className="text-sm text-gray-700">{product.ShortTruction ? product.ShortTruction : (product.Material ? product.Material : 'No Short-Tructions available.')}</p>
+              </div>
+
               <div className="space-y-3 mt-4">
                 <div className="flex items-center space-x-3">
                   <svg className="w-5 h-5 text-gray-900 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
