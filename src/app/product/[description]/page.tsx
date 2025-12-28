@@ -43,6 +43,7 @@ export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState("M");
   const [imageIndex, setImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [shareCopied, setShareCopied] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [cartQuantity, setCartQuantity] = useState(0);
   const [showAdded, setShowAdded] = useState(false);
@@ -98,27 +99,57 @@ export default function ProductPage() {
     fetchCartQuantity();
   }, [user?.email, product, selectedSize]);
 
-  // Fetch related products
+  // Fetch cross-category recommendations (Style It With)
   useEffect(() => {
     if (!product || !db) return;
 
-    const fetchRelated = async () => {
-      const q = query(
-        collection(db!, "inventory"),
-        where("Product", "==", product.Product)
-      );
+    const fetchStyleItWith = async () => {
+      // Determine complementary categories based on current product
+      const currentCategory = product.Product;
+      let targetCategories: string[] = [];
 
-      const snap = await getDocs(q);
+      // If it's a dress, recommend accessories (purses, earrings)
+      if (currentCategory.toLowerCase().includes('dress')) {
+        targetCategories = ['Purses', 'Earrings'];
+      }
+      // If it's an accessory (purse or earring), recommend dresses and other accessories
+      else if (currentCategory.toLowerCase().includes('purse')) {
+        targetCategories = ['Short Dresses', 'Party Dresses', 'Earrings'];
+      }
+      else if (currentCategory.toLowerCase().includes('earring')) {
+        targetCategories = ['Short Dresses', 'Party Dresses', 'Purses'];
+      }
+      // For other categories, show a mix of everything except the current category
+      else {
+        targetCategories = ['Short Dresses', 'Party Dresses', 'Purses', 'Earrings'];
+      }
 
-      const others = snap.docs
-        .map((d) => d.data() as Product)
-        .filter((p) => p.Description !== product.Description);
+      // Fetch products from target categories
+      const allRecommendations: Product[] = [];
 
-      const shuffled = others.sort(() => 0.5 - Math.random());
+      for (const category of targetCategories) {
+        try {
+          const q = query(
+            collection(db!, "inventory"),
+            where("Product", "==", category)
+          );
+          const snap = await getDocs(q);
+          const categoryProducts = snap.docs.map((d) => d.data() as Product);
+          allRecommendations.push(...categoryProducts);
+        } catch (error) {
+          console.log(`No products found for category: ${category}`);
+        }
+      }
+
+      // Shuffle and select 4 random recommendations
+      const shuffled = allRecommendations
+        .filter((p) => p.ID !== product.ID) // Exclude current product
+        .sort(() => 0.5 - Math.random());
+      
       setRelatedProducts(shuffled.slice(0, 4));
     };
 
-    fetchRelated();
+    fetchStyleItWith();
   }, [product]);
 
   if (loading) {
@@ -235,6 +266,30 @@ export default function ProductPage() {
     setTimeout(() => setShowAdded(false), 2000);
   };
 
+  const handleShare = async () => {
+    const link = typeof window !== "undefined" ? window.location.href : "";
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: (product as any)?.ProductName || product.Description || "Product",
+          url: link,
+        });
+      } else {
+        await navigator.clipboard.writeText(link);
+        setShareCopied(true);
+        setTimeout(() => setShareCopied(false), 2000);
+      }
+    } catch (err) {
+      try {
+        await navigator.clipboard.writeText(link);
+        setShareCopied(true);
+        setTimeout(() => setShareCopied(false), 2000);
+      } catch (e) {
+        alert("Could not copy link. Please copy manually: " + link);
+      }
+    }
+  };
+
   return (
     <>
       {/* MAIN PRODUCT SECTION */}
@@ -249,11 +304,11 @@ export default function ProductPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           {/* IMAGE SECTION */}
           <div>
-            <div className="relative bg-gray-50 border rounded-xl p-4 sm:p-6">
+            <div className="relative">
               <img
                 src={images[imageIndex] || "/placeholder.png"}
                 alt={product.Description}
-                className="w-full h-[300px] sm:h-[420px] lg:h-[520px] object-contain cursor-zoom-in"
+                className="w-full h-[300px] sm:h-[400px] lg:h-[500px] object-contain cursor-zoom-in"
                 onClick={() => setZoomImage(images[imageIndex] || "/placeholder.png")}
               />
 
@@ -261,13 +316,13 @@ export default function ProductPage() {
                 <>
                   <button
                     onClick={prevImage}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-black text-white px-3 py-2 rounded-full"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-[#ffb6c1] text-white px-3 py-2 rounded-full"
                   >
                     ‹
                   </button>
                   <button
                     onClick={nextImage}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-black text-white px-3 py-2 rounded-full"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-[#ffb6c1] text-white px-3 py-2 rounded-full"
                   >
                     ›
                   </button>
@@ -275,16 +330,16 @@ export default function ProductPage() {
               )}
             </div>
 
-            {/* THUMBNAILS */}
-            <div className="flex gap-3 mt-4 overflow-x-auto">
-              {images.map((img, i) => (
-                <img
+            {/* DOT NAVIGATION */}
+            <div className="flex gap-2 mt-4 justify-center">
+              {images.map((_, i) => (
+                <button
                   key={i}
-                  src={img || "/placeholder.png"}
                   onClick={() => setImageIndex(i)}
-                  className={`h-20 w-20 sm:h-24 sm:w-24 object-contain rounded cursor-pointer border-2 ${
-                    i === imageIndex ? "border-black" : "border-transparent"
+                  className={`h-3 w-3 rounded-full transition-colors duration-200 border-2 focus:outline-none ${
+                    i === imageIndex ? "bg-[#ffb6c1] border-[#ffb6c1]" : "bg-[#ffd1dc] border-[#ffd1dc]"
                   }`}
+                  aria-label={`Show image ${i + 1}`}
                 />
               ))}
             </div>
@@ -292,62 +347,70 @@ export default function ProductPage() {
 
           {/* DETAILS */}
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold mb-2">
-              {product.Description}
-            </h1>
-
-            <p className="text-gray-400 mb-6">{product.Product}</p>
-
-            <p className="text-2xl sm:text-3xl font-semibold mb-6">
-              ₹{product.Price}
-            </p>
-
-            <p className="mb-4">
-              <span className="font-semibold">Material:</span>{" "}
-              {product.Material ?? "Premium Fabric"}
-            </p>
-
-            {/* QUANTITY */}
-            <div className="mb-6">
-              <p className="font-semibold mb-2">Quantity:</p>
-              {availableStock === 0 && (
-                <p className="text-sm text-red-500 mb-2">
-                  Out of stock in size {selectedSize}
-                </p>
-              )}
-              <div className="flex items-center gap-4 flex-wrap border rounded-full w-fit px-6 py-3">
-                <button
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="text-xl font-bold"
-                  disabled={availableStock === 0}
+            <div className="flex items-start justify-between mb-2">
+              <h1 
+                className="text-gray-900 leading-tight flex-1"
+                style={{ 
+                  fontFamily: 'Montserrat',
+                  fontWeight: '600',
+                  fontSize: '40px',
+                  lineHeight: '1.2'
+                }}
+              >
+                {(product as any).ProductName ? (product as any).ProductName : product.Description}
+              </h1>
+              {/* Share button: only visible on mobile */}
+              <div className="relative block sm:hidden ml-3">
+                <button 
+                  onClick={handleShare}
+                  className="w-10 h-10 bg-[#ffd1dc] rounded-full hover:bg-[#ffb6c1] transition-colors flex items-center justify-center flex-shrink-0"
+                  style={{ borderRadius: '50%' }}
+                  title="Share product"
                 >
-                  −
+                  <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                  </svg>
                 </button>
-                <span className="font-semibold">{quantity}</span>
-                <button
-                  onClick={() => setQuantity((q) => Math.min(availableStock, q + 1))}
-                  className="text-xl font-bold"
-                  disabled={availableStock === 0 || quantity >= availableStock}
-                >
-                  +
-                </button>
+                {shareCopied && (
+                  <div className="absolute top-full mt-2 -right-2 bg-gray-800 text-white text-xs font-medium px-3 py-1 rounded shadow-lg whitespace-nowrap">
+                    Link copied
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* SIZE */}
-            <div className="mb-6">
-              <p className="font-semibold mb-2">Size:</p>
-              {/* View Size Chart removed */}
-              <div className="flex gap-3 flex-wrap">
-                {["S", "M", "L", "XL"].map((size) => (
+            <div className="mb-4">
+              <div 
+                className="text-gray-900"
+                style={{ 
+                  fontFamily: 'Montserrat',
+                  fontWeight: '600',
+                  fontSize: '36px'
+                }}
+              >
+                ₹{product.Price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </div>
+            </div>
+
+            {/* SIZE (moved above quantity) */}
+            <div className="mb-3">
+              <p className="mb-2 text-sm">Size:</p>
+              <div className="flex gap-2 flex-wrap">
+                {['S', 'M', 'L', 'XL'].map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`px-4 py-2 rounded border font-semibold ${
+                    className={`rounded-sm border font-semibold transition-colors duration-150 flex items-center justify-center ${
                       selectedSize === size
-                        ? "bg-black text-white"
-                        : "border-black text-black"
+                        ? "bg-[#ffb6c1] text-white"
+                        : "border-[#ffd1dc] text-black"
                     }`}
+                    style={{
+                      width: '48px',
+                      height: '40px',
+                      fontSize: '15px',
+                      lineHeight: 1.1
+                    }}
                   >
                     {size}
                   </button>
@@ -355,101 +418,147 @@ export default function ProductPage() {
               </div>
             </div>
 
-            <button
-              onClick={handleAddToCart}
-              disabled={availableStock === 0}
-              className={`w-full py-4 rounded-xl font-semibold mb-4 ${
-                availableStock === 0
-                  ? "bg-gray-400 cursor-not-allowed text-gray-600"
-                  : "bg-indigo-600 hover:bg-indigo-700 text-white"
-              }`}
-            >
-              {availableStock === 0 ? "Out of Stock" : "Add to Cart"}
-            </button>
-            {showAdded && (
-              <div className="text-green-600 text-center font-semibold mb-4">
-                Added to Cart!
+            {/* QUANTITY (now below size) */}
+            <div className="mb-5">
+              <label 
+                className="text-gray-900 mb-2 block"
+                style={{
+                  fontFamily: 'Montserrat',
+                  fontWeight: '600',
+                  fontSize: '15px'
+                }}
+              >
+                Quantity:
+              </label>
+              {availableStock === 0 && (
+                <p className="text-sm text-red-500 mb-2">Out of stock in size {selectedSize}</p>
+              )}
+              <div className="flex items-start space-x-3">
+                <div className="flex items-center border border-gray-300" style={{ height: '54px' }}>
+                  <button
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    className="px-2 py-2 text-gray-900 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                    style={{ fontSize: '14px' }}
+                    disabled={availableStock === 0}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                    </svg>
+                  </button>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={quantity}
+                    onChange={() => {}}
+                    className="w-12 sm:w-16 h-[54px] px-2 py-2 text-center border-0 bg-transparent focus:outline-none text-gray-900 select-none"
+                    style={{
+                      fontFamily: 'Montserrat',
+                      fontWeight: '600',
+                      fontSize: '14px',
+                      height: '54px'
+                    }}
+                    readOnly
+                  />
+                  <button
+                    onClick={() => setQuantity((q) => Math.min(availableStock, q + 1))}
+                    className="px-2 py-2 text-gray-900 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                    style={{ fontSize: '14px' }}
+                    disabled={availableStock === 0 || quantity >= availableStock}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </button>
+                </div>
+                <button
+                  onClick={handleAddToCart}
+                  disabled={availableStock === 0}
+                  className={`flex items-center justify-center px-2 py-2 transition-all duration-200 ${
+                    availableStock === 0
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-[#ffd1dc] hover:bg-[#ffb6c1] text-black'
+                  }`}
+                  style={{
+                    fontFamily: 'Montserrat',
+                    fontWeight: '600',
+                    fontSize: '14px',
+                    borderRadius: '0',
+                    height: '54px',
+                    width: '350px',
+                    maxWidth: '100%'
+                  }}
+                >
+                  {availableStock === 0 ? 'Sold Out' : 'Add to Cart'}
+                </button>
               </div>
-            )}
-
-            <button
-              onClick={() => {
-                // Check stock availability
-                if (availableStock === 0) {
-                  alert("This size is out of stock");
-                  return;
-                }
-
-                if (quantity > availableStock) {
-                  alert(`Only ${availableStock} items available in size ${selectedSize}`);
-                  return;
-                }
-
-                if (!user?.email) {
-                  sessionStorage.setItem(
-                    "postAuthAction",
-                    JSON.stringify({
-                      type: "BUY_NOW",
-                      payload: {
-                        productId: product.ID,
-                        quantity,
-                        size: selectedSize,
-                      },
-                      redirectTo: "/checkout",
-                    })
-                  );
-
-                  router.push("/sign-in");
-                  return;
-                }
-
-                sessionStorage.setItem(
-                  "buyNowItem",
-                  JSON.stringify({
-                    productId: product.ID,
-                    quantity,
-                    size: selectedSize,
-                  })
-                );
-
-                router.push("/checkout");
-              }}
-              disabled={availableStock === 0}
-              className={`w-full py-4 rounded-xl font-semibold ${
-                availableStock === 0
-                  ? "bg-gray-400 cursor-not-allowed text-gray-600"
-                  : "bg-indigo-500 hover:bg-indigo-600 text-white"
-              }`}
-            >
-              {availableStock === 0 ? "Out of Stock" : "Buy Now"}
-            </button>
+              <div className="space-y-3 mt-4">
+                <div className="flex items-center space-x-3">
+                  <svg className="w-5 h-5 text-gray-900 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span 
+                    className="text-gray-900"
+                    style={{
+                      fontFamily: 'Montserrat',
+                      fontWeight: '400',
+                      fontSize: '13px'
+                    }}
+                  >
+                    Free Shipping PAN India
+                  </span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <svg className="w-5 h-5 text-gray-900 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-7V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <span 
+                    className="text-gray-900"
+                    style={{
+                      fontFamily: 'Montserrat',
+                      fontWeight: '400',
+                      fontSize: '13px'
+                    }}
+                  >
+                    Secure payment processing through Razorpay
+                  </span>
+                </div>
+              </div>
+              {showAdded && (
+                <div className="text-green-600 text-center mt-4">
+                  Added to Cart!
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* RELATED PRODUCTS */}
+      {/* STYLE IT WITH */}
       {relatedProducts.length > 0 && (
-        <div className="relative z-10 bg-white text-black px-4 sm:px-8 lg:px-12 py-24">
-          <h2 className="text-2xl font-semibold mb-6">Related Products</h2>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="relative z-10 bg-white text-black pl-8 pr-8 sm:pl-16 sm:pr-16 lg:pl-32 lg:pr-32 pt-0 pb-12 -mt-16">
+          <hr className="border-t border-gray-300 mb-4" />
+          <h2 className="text-2xl font-semibold mb-4">Style It With</h2>
+          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory sm:grid sm:grid-cols-3 lg:grid-cols-4 sm:gap-2">
             {relatedProducts.map((rp) => (
-              <div
-                key={rp.ID}
-                onClick={() =>
-                  router.push(
-                    `/product/${encodeURIComponent(rp.Description)}`
-                  )
-                }
-                className="cursor-pointer bg-gray-50 border rounded-xl p-4 text-black hover:scale-105 transition"
-              >
-                <img
-                  src={rp.ImageUrl1 || "/placeholder.png"}
-                  alt={rp.Description}
-                  className="h-36 sm:h-44 lg:h-48 w-full object-contain mb-3"
-                />
-                <p className="font-semibold text-sm">{rp.Description}</p>
-                <p className="font-bold mt-1">₹{rp.Price}</p>
+              <div key={rp.ID} className="flex-shrink-0 w-1/2 sm:w-auto snap-start text-black transition px-2">
+                <button
+                  type="button"
+                  onClick={() => router.push(`/product/${encodeURIComponent(rp.Description)}`)}
+                  className="cursor-pointer block hover:scale-105 transition-transform"
+                  aria-label={`View ${rp.Description}`}
+                >
+                  <img
+                    src={rp.ImageUrl1 || "/placeholder.png"}
+                    alt={rp.Description}
+                    className="h-36 sm:h-44 lg:h-52 object-contain mb-0 self-start"
+                  />
+                </button>
+
+                <div className="flex flex-col items-start mt-1">
+                  <p className="text-base font-medium">{rp.Description}</p>
+                  <p className="font-bold text-lg mt-1">₹{rp.Price}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -505,7 +614,7 @@ export default function ProductPage() {
         </div>
       )}
 
-      <ReviewCarousel />
+      {/* <ReviewCarousel /> removed as per request */}
     </>
   );
 }
