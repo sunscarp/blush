@@ -81,7 +81,10 @@ export default function ReviewCarousel() {
 
   return (
     <section className="py-16 text-[#1c1c1c]">
-      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-10">
+      <h2
+        className="text-2xl sm:text-3xl md:text-4xl text-center mb-16"
+        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontStyle: 'normal' }}
+      >
         Customer Reviews
       </h2>
 
@@ -90,7 +93,7 @@ export default function ReviewCarousel() {
         {canScrollLeft && (
           <button
             onClick={() => scrollByOne("left")}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-[#f6d6de] text-[#c9a24d] p-3 rounded-full shadow-lg"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-[#fff0f4] text-black p-3 rounded-full shadow-lg"
           >
             ‹
           </button>
@@ -100,7 +103,7 @@ export default function ReviewCarousel() {
         {canScrollRight && (
           <button
             onClick={() => scrollByOne("right")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-[#f6d6de] text-[#c9a24d] p-3 rounded-full shadow-lg"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-[#fff0f4] text-black p-3 rounded-full shadow-lg"
           >
             ›
           </button>
@@ -117,14 +120,14 @@ export default function ReviewCarousel() {
               data-card
               className="flex-shrink-0 w-[75%] sm:w-[42%] lg:w-[26%]"
             >
-              <div className="h-full rounded-2xl bg-[#f6d6de] p-6 shadow-lg flex flex-col justify-between">
-                
-                <p className="text-[#c9a24d] text-sm sm:text-base leading-relaxed mb-6">
+              <div className="h-full rounded-2xl bg-[#fff0f4] p-6 shadow-lg flex flex-col justify-between">
+
+                <p className="text-black text-sm sm:text-base leading-relaxed mb-6">
                   “{review.text}”
                 </p>
 
                 <div className="text-right">
-                  <span className="text-[#c9a24d] font-semibold text-sm">
+                  <span className="text-black font-semibold text-sm">
                     — {review.name}
                   </span>
                 </div>

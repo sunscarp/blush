@@ -78,7 +78,10 @@ function ShopContent() {
   useEffect(() => {
     try {
       const cat = params.get("category");
-      if (cat) setFilter(cat);
+      if (cat) {
+        setFilter(cat);
+        setSelectedSubcategory(cat);
+      }
     } catch (e) {
       // ignore
     }

@@ -48,7 +48,7 @@ export default function FAQPage() {
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
-      <main className="px-0 sm:px-4 py-12 max-w-6xl mx-auto flex-1">
+      <main className="px-0 sm:px-4 pt-12 pb-0 max-w-6xl mx-auto flex-1">
         {/* Contact Details Section */}
         <div>
           <div className="flex justify-between items-start mb-6">
@@ -63,7 +63,7 @@ export default function FAQPage() {
 
           <div className="grid sm:grid-cols-3 gap-6 md:gap-8 items-start">
             {/* Contact Details */}
-            <div className="bg-[#ffd1dc] border-2 border-pink-200 rounded-lg p-6 sm:col-span-1 shadow-sm">
+            <div className="bg-[#fff0f6] border-2 border-pink-100 rounded-lg p-6 sm:col-span-1 shadow-sm">
               <h2 className="text-xl font-semibold text-black mb-4">Get in Touch</h2>
               <div className="space-y-3 text-black">
                 

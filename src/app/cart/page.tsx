@@ -92,8 +92,9 @@ export default function CartPage() {
     postAuthHandled.current = true;
 
     const addAfterAuth = async () => {
-      if (!db) return;
-      const cartRef = collection(db, "Cart");
+      const fdb = db;
+      if (!fdb) return;
+      const cartRef = collection(fdb, "Cart");
 
       const q = query(
         cartRef,
@@ -132,7 +133,8 @@ export default function CartPage() {
     setLoadingItems(true);
 
     if (user && user.email && db) {
-      const colRef = collection(db, "Cart");
+      const fdb = db;
+      const colRef = collection(fdb, "Cart");
       const q = query(colRef, where("UserMail", "==", user.email));
       unsub = onSnapshot(
         q,
@@ -165,9 +167,12 @@ export default function CartPage() {
   useEffect(() => {
     if (!db) return;
 
+    const fdb = db;
+
     async function loadInventory() {
       try {
-        const col = collection(db, "inventory");
+        if (!fdb) return;
+        const col = collection(fdb, "inventory");
         const snap = await getDocs(col);
         const arr: InventoryItem[] = [];
         snap.forEach((d) => {
@@ -251,9 +256,10 @@ export default function CartPage() {
       // Persist the cleaned-up cart for guest vs logged-in users
       if (user && user.email && db) {
         setItems(nextItems);
+        const fdb2 = db;
         removedItems.forEach((item) => {
-          if (item.docId) {
-            deleteDoc(firestoreDoc(db, "Cart", item.docId)).catch((e) => {
+          if (item.docId && fdb2) {
+            deleteDoc(firestoreDoc(fdb2, "Cart", item.docId)).catch((e) => {
               console.error("hasSufficientStock Firestore cleanup error", e);
             });
           }
@@ -302,10 +308,12 @@ export default function CartPage() {
 
     if (user && user.email && item.docId && db) {
       try {
+        const fdb3 = db;
+        if (!fdb3) return;
         if (newQty <= 0) {
-          await deleteDoc(firestoreDoc(db, "Cart", item.docId));
+          await deleteDoc(firestoreDoc(fdb3, "Cart", item.docId));
         } else {
-          await updateDoc(firestoreDoc(db, "Cart", item.docId), {
+          await updateDoc(firestoreDoc(fdb3, "Cart", item.docId), {
             Quantity: newQty,
           });
         }
@@ -323,7 +331,9 @@ export default function CartPage() {
   async function removeItem(item: CartItem) {
     if (user && user.email && item.docId && db) {
       try {
-        await deleteDoc(firestoreDoc(db, "Cart", item.docId));
+        const fdb4 = db;
+        if (!fdb4) return;
+        await deleteDoc(firestoreDoc(fdb4, "Cart", item.docId));
       } catch (e) {
         console.error("removeItem Firestore error", e);
       }

@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState, Suspense } from "react";
-import FAQModal from "@/components/FAQModal";
+// import FAQModal from "@/components/FAQModal";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
@@ -156,7 +156,7 @@ function NavbarContent() {
     await signOut(auth);
   };
 
-  const [faqOpen, setFaqOpen] = useState(false);
+  // const [faqOpen, setFaqOpen] = useState(false);
   // Track if search menu is fully closed for smooth transition
   const [searchMenuReallyClosed, setSearchMenuReallyClosed] = useState(true);
 
@@ -186,7 +186,7 @@ function NavbarContent() {
         />
         {/* Sidebar */}
         <div
-          className={`fixed left-0 z-[60] bg-[#f6d6de] shadow-xl transition-transform duration-300 ease-in-out w-full md:w-[360px] lg:w-[420px] ${
+          className={`fixed left-0 z-[60] bg-[#eddde8] text-black shadow-xl transition-transform duration-300 ease-in-out w-full md:w-[360px] lg:w-[420px] ${
             menuOpen ? "translate-x-0" : "-translate-x-full"
           }`}
           style={{
@@ -195,11 +195,11 @@ function NavbarContent() {
             // width is controlled by Tailwind classes: full on small screens, constrained on md+
           }}
         >
-          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
-            <h2 className="text-lg sm:text-xl font-bold text-[#c9a24d]">Menu</h2>
+          <div className="flex items-center justify-between mx-4 sm:mx-6 py-4 border-b border-black">
+            <h2 className="text-lg sm:text-xl font-bold text-black">Menu</h2>
             <button
               onClick={() => setMenuOpen(false)}
-              className="p-2 rounded-md hover:bg-gray-100 text-[#c9a24d] min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="p-2 rounded-md hover:bg-pink-50 text-black min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               <svg
                 className="w-6 h-6"
@@ -216,44 +216,42 @@ function NavbarContent() {
               </svg>
             </button>
           </div>
-          <nav className="p-4 sm:p-6">
+              <nav className="p-4 sm:p-6">
             <div className="space-y-2 sm:space-y-4">
               <Link
                 href="/"
-                className="block py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+                className="block py-3 px-4 text-base sm:text-lg text-black hover:bg-pink-50 rounded-md transition-colors min-h-[48px] flex items-center"
                 onClick={(e) => { e.preventDefault(); setMenuOpen(false); window.location.href = '/'; }}
               >
                 Home
               </Link>
               <Link
                 href="/shop"
-                className="block py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+                className="block py-3 px-4 text-base sm:text-lg text-black hover:bg-pink-50 rounded-md transition-colors min-h-[48px] flex items-center"
                 onClick={(e) => { e.preventDefault(); setMenuOpen(false); window.location.href = '/shop'; }}
               >
                 Shop
               </Link>
-              <button
-                onClick={() => {
-                  setMenuOpen(false);
-                  router.push('/faq');
-                }}
-                className="block w-full text-left py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+              <Link
+                href="/faq"
+                className="block w-full text-left py-3 px-4 text-base sm:text-lg text-black hover:bg-pink-50 rounded-md transition-colors min-h-[48px] flex items-center"
+                onClick={() => setMenuOpen(false)}
               >
-                FAQ
-              </button>
+                Contact Us
+              </Link>
 
               {/* Additional Menu Items */}
-              <div className="border-t border-gray-200 pt-4 mt-6">
+              <div className="border-t border-black pt-4 mt-6">
                 <Link
                   href="#"
-                  className="block py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+                  className="block py-3 px-4 text-base sm:text-lg text-black hover:bg-pink-50 rounded-md transition-colors min-h-[48px] flex items-center"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Contact
+                  Privacy Policy
                 </Link>
                 <Link
                   href="#"
-                  className="block py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+                  className="block py-3 px-4 text-base sm:text-lg text-black hover:bg-pink-50 rounded-md transition-colors min-h-[48px] flex items-center"
                   onClick={() => setMenuOpen(false)}
                 >
                   Shipping Policy
@@ -266,7 +264,7 @@ function NavbarContent() {
                   <div className="border-t border-gray-200 pt-4 mt-6">
                     <Link
                       href="/orders"
-                      className="block py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+                      className="block py-3 px-4 text-base sm:text-lg text-black hover:bg-pink-50 rounded-md transition-colors min-h-[48px] flex items-center"
                       onClick={() => {
                         setMenuOpen(false);
                         router.push('/orders');
@@ -279,7 +277,7 @@ function NavbarContent() {
                         setMenuOpen(false);
                         handleSignOut();
                       }}
-                      className="block w-full text-left py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+                      className="block w-full text-left py-3 px-4 text-base sm:text-lg text-black hover:bg-pink-50 rounded-md transition-colors min-h-[48px] flex items-center"
                     >
                       Sign Out
                     </button>
@@ -288,7 +286,7 @@ function NavbarContent() {
                   <div className="border-t border-gray-200 pt-4 mt-6">
                     <Link
                       href="/sign-in"
-                      className="block py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+                      className="block py-3 px-4 text-base sm:text-lg text-black hover:bg-pink-50 rounded-md transition-colors min-h-[48px] flex items-center"
                       onClick={() => {
                         setMenuOpen(false);
                         window.location.href = '/sign-in';
@@ -301,11 +299,11 @@ function NavbarContent() {
               </div>
 
               {/* Social Media */}
-              <div className="border-t border-gray-200 pt-4 mt-6">
+              <div className="border-t border-black pt-4 mt-6">
                 <div className="flex space-x-4 px-4">
                   <a
                     href="#"
-                    className="text-[#c9a24d] hover:text-gray-600 transition-colors"
+                    className="text-black hover:text-black/80 transition-colors"
                     aria-label="Instagram"
                   >
                     <svg
@@ -505,37 +503,42 @@ function NavbarContent() {
       </div>
 
       <header
-        className={`static z-[80] backdrop-blur-md border-b-6 border-[#c9a24d] transition-opacity duration-300 ${
+        className={`static z-[80] backdrop-blur-md transition-opacity duration-300 ${
           searchMenuOpen || !searchMenuReallyClosed ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
         }`}
       >
         {/* Main Navigation */}
-        <div className="relative flex items-center justify-between px-4 sm:px-6 md:px-10 py-3 sm:py-4 font-bold text-white">
+        <div className="relative flex items-center justify-between px-4 sm:px-6 md:px-10 py-3 sm:py-4 text-white">
           {/* Mobile/desktop responsive navbar */}
           <div className="flex w-full items-center justify-between relative min-h-[48px]">
             {/* Hamburger */}
             <div className="flex items-center h-full">
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="p-2 sm:p-2 md:p-2 rounded-md hover:bg-gray-800 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                className="p-2 sm:p-2 md:p-2 rounded-md hover:bg-[#ffe4ec] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center font-normal"
                 aria-label="Menu"
               >
                 <div className="space-y-1">
-                  <div className="w-5 sm:w-6 h-[2px] bg-[#c9a24d]"></div>
-                  <div className="w-5 sm:w-6 h-[2px] bg-[#c9a24d]"></div>
-                  <div className="w-5 sm:w-6 h-[2px] bg-[#c9a24d]"></div>
+                  <div className="w-5 sm:w-6 h-[2px] bg-black"></div>
+                  <div className="w-5 sm:w-6 h-[2px] bg-black"></div>
+                  <div className="w-5 sm:w-6 h-[2px] bg-black"></div>
                 </div>
               </button>
             </div>
             {/* Brand Name - absolutely centered horizontally */}
             
               <Link
-  href="/"
-  className="block absolute left-1/2 -translate-x-1/2 text-xl md:text-2xl font-bold tracking-wide transition-colors"
-  style={{ color: '#c9a24d' }}
->
-  BLUSH
-</Link>
+                href="/"
+                className="block absolute left-1/2 -translate-x-1/2 text-xl md:text-2xl tracking-wide transition-colors"
+                style={{
+                  color: '#000',
+                  fontFamily: "'Playfair Display', serif",
+                  fontWeight: 600,
+                  fontStyle: 'normal',
+                }}
+              >
+                BLUSH
+              </Link>
 
             
             {/* Right side: Only show search, user, and cart on mobile */}
@@ -545,7 +548,7 @@ function NavbarContent() {
                 <button
                   type="button"
                   aria-label="Open search"
-                  className="p-2 rounded-full hover:bg-gray-800 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  className="p-2 rounded-full hover:bg-[#ffe4ec] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center font-normal"
                   onClick={() => setSearchMenuOpen(true)}
                 >
                   <svg
@@ -554,7 +557,7 @@ function NavbarContent() {
                     viewBox="0 0 24 24"
                     strokeWidth={2.5}
                     stroke="currentColor"
-                    className="w-5 sm:w-6 h-5 sm:h-6 text-[#c9a24d]"
+                    className="w-5 sm:w-6 h-5 sm:h-6 text-black"
                   >
                     <path
                       strokeLinecap="round"
@@ -582,7 +585,7 @@ function NavbarContent() {
                       type="button"
                       aria-label="User menu"
                       onClick={() => setUserMenuOpen((s) => !s)}
-                      className="p-2 rounded-full hover:bg-gray-800 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                      className="p-2 rounded-full hover:bg-[#ffe4ec] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center font-normal"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -590,7 +593,7 @@ function NavbarContent() {
                         viewBox="0 0 24 24"
                         strokeWidth={2.5}
                         stroke="currentColor"
-                        className="w-5 sm:w-6 h-5 sm:h-6 text-[#c9a24d]"
+                        className="w-5 sm:w-6 h-5 sm:h-6 text-black"
                       >
                         <path
                           strokeLinecap="round"
@@ -602,16 +605,10 @@ function NavbarContent() {
 
                     {/* User Dropdown */}
                     {userMenuOpen && (
-                      <div className="absolute right-0 top-full mt-0 w-48 bg-[#f6d6de] rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                        <div className="px-4 py-2 border-b border-gray-100">
-                          <p className="text-sm font-medium text-[#c9a24d] truncate">
-                            {user.displayName || user.email?.split('@')[0] || 'User'}
-                          </p>
-                          <p className="text-xs text-[#c9a24d] truncate">{user.email}</p>
-                        </div>
+                      <div className="absolute right-0 top-full mt-0 w-48 bg-[#fff6fa] rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                         <Link
                           href="/orders"
-                          className="flex items-center px-4 py-2 text-sm text-[#c9a24d] hover:bg-gray-100 transition-colors"
+                          className="flex items-center px-4 py-2 text-sm font-normal text-black hover:bg-white transition-colors"
                           onClick={() => setUserMenuOpen(false)}
                         >
                           <svg
@@ -634,7 +631,7 @@ function NavbarContent() {
                             setUserMenuOpen(false);
                             handleSignOut();
                           }}
-                          className="flex items-center w-full px-4 py-2 text-sm text-[#c9a24d] hover:bg-gray-100 transition-colors"
+                          className="flex items-center w-full px-4 py-2 text-sm font-normal text-black hover:bg-white transition-colors"
                         >
                           <svg
                             className="w-4 h-4 mr-3"
@@ -657,7 +654,7 @@ function NavbarContent() {
                 ) : (
                   <Link
                     href="/sign-in"
-                    className="p-2 rounded-full hover:bg-gray-800 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                    className="p-2 rounded-full hover:bg-[#ffe4ec] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center font-normal"
                     aria-label="Sign in"
                   >
                     <svg
@@ -666,7 +663,7 @@ function NavbarContent() {
                       viewBox="0 0 24 24"
                       strokeWidth={2.5}
                       stroke="currentColor"
-                      className="w-5 sm:w-6 h-5 sm:h-6 text-[#c9a24d]"
+                      className="w-5 sm:w-6 h-5 sm:h-6 text-black"
                     >
                       <path
                         strokeLinecap="round"
@@ -681,8 +678,8 @@ function NavbarContent() {
               {/* Cart */}
               <Link
                 href="/cart"
-                className={`relative text-white hover:text-gray-300 transition-all flex items-center justify-center ${
-                  pulse ? "ring-4 ring-blue-300 animate-pulse rounded-full px-2 py-1" : ""
+                className={`relative p-2 rounded-full text-white hover:bg-[#ffe4ec] transition-all flex items-center justify-center font-normal ${
+                  pulse ? "ring-4 ring-black animate-pulse rounded-full px-2 py-1" : ""
                 }`}
                 style={{ minWidth: '2.5rem', minHeight: '2.5rem' }}
                 onClick={(e) => { e.preventDefault(); window.location.href = '/cart'; }}
@@ -693,7 +690,7 @@ function NavbarContent() {
                   viewBox="0 0 24 24"
                   strokeWidth={2.5}
                   stroke="currentColor"
-                  className="w-6 sm:w-7 h-6 sm:h-7 text-[#c9a24d]"
+                  className="w-6 sm:w-7 h-6 sm:h-7 text-black"
                 >
                   <path
                     strokeLinecap="round"
@@ -711,7 +708,7 @@ function NavbarContent() {
           </div>
         </div>
 
-        <FAQModal open={faqOpen} onClose={() => setFaqOpen(false)} />
+        {/* <FAQModal open={faqOpen} onClose={() => setFaqOpen(false)} /> */}
       </header>
     </>
   );

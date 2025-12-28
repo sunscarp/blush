@@ -14,6 +14,7 @@ import { db } from "@/firebase";
 type Product = {
   ID: number;
   Description: string;
+  ProductName?: string;
   ImageUrl1: string;
   Price: number;
   OriginalPrice?: number;
@@ -73,19 +74,22 @@ export default function Home() {
 
 
       {/* Categories Panel (2x2 grid on mobile, 1x4 on desktop) */}
-      <section className="text-black px-6 md:px-10 pt-16 rounded-xl">
+      <section className="text-black px-6 md:px-10 pt-8 md:pt-16 rounded-xl">
 
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
+          <h2
+            className="text-3xl md:text-4xl text-center mb-10 md:mb-14"
+            style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontStyle: 'normal' }}
+          >
             Browse By Category
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
             {categories.map(cat => {
               const images: Record<string, string> = {
-  "Party Wear Dresses": products.find(p => p.Product === "Party Wear Dresses")?.ImageUrl1 || "/placeholder.png",
-  "Short Dresses": products.find(p => p.Product === "Short Dresses")?.ImageUrl1 || "/placeholder.png",
-  "Stockings": products.find(p => p.Product === "Stockings")?.ImageUrl1 || "/placeholder.png",
-  "Leather Skirts": products.find(p => p.Product === "Leather Skirts")?.ImageUrl1 || "/placeholder.png",
+  "Party Wear Dresses": "https://img4.dhresource.com/webp/m/0x0/f3/albu/jc/g/04/9244fe94-5e93-4600-9896-f0184a9d807d.jpg",
+  "Short Dresses": "https://assets.myntassets.com/dpr_1.5,q_30,w_400,c_limit,fl_progressive/assets/images/2025/APRIL/23/5UJGEshH_07246c064c1f4bf9b7c38cd0fb6a8a3b.jpg",
+  "Stockings": "https://assets.myntassets.com/dpr_1.5,q_30,w_400,c_limit,fl_progressive/assets/images/2025/MARCH/29/xu248Xou_cb078b7f8a8e4538910b46c46dff9d3b.jpg",
+  "Leather Skirts": "https://assets.myntassets.com/dpr_1.5,q_30,w_400,c_limit,fl_progressive/assets/images/15953978/2022/1/29/a43ec50c-861c-4771-8460-48cf1b0a9f821643433862933-Tokyo-Talkies-Women-Black-A-Line-Slim-Fit-Skirt-631164343386-1.jpg",
 };
 
               const imgSrc = images[cat] || `https://picsum.photos/seed/${encodeURIComponent(cat)}/400/600`;
@@ -93,17 +97,25 @@ export default function Home() {
                 <Link
                   key={cat}
                   href={`/shop?category=${encodeURIComponent(cat)}`}
-                  className="group block rounded-xl overflow-hidden"
+                  className="group block rounded-none overflow-hidden"
                 >
-                  <div className="relative h-44 md:h-80 lg:h-96 bg-gray-900 flex items-center justify-center hover:opacity-95 transition">
+                  {/* Mobile: show category name above image since hover isn't available */}
+                  <div className="block md:hidden text-center mb-2">
+                    <span className="text-lg font-semibold uppercase text-black">
+                      {cat === "Party Wear Dresses" ? "Party Dresses" : cat}
+                    </span>
+                  </div>
+
+                  <div className="relative h-44 md:h-80 lg:h-96 bg-gray-900 flex items-center justify-center transition">
                     <img
                       src={imgSrc}
                       alt={cat}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover z-0"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-base md:text-2xl lg:text-3xl font-bold text-[#c9a24d] drop-shadow-lg uppercase tracking-wide text-center px-2">
-                        {cat}
+                    {/* Hover overlay with subtle shadow and "Shop X" text */}
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <span className="text-base md:text-2xl lg:text-3xl font-bold text-white drop-shadow-lg uppercase tracking-wide text-center px-2">
+                        Shop {cat}
                       </span>
                     </div>
                   </div>
@@ -115,21 +127,24 @@ export default function Home() {
       </section>
 
       {/* BEST SELLERS */}
-<section className="text-black px-6 md:px-10 pt-16">
+<section className="text-black px-6 md:px-10 pt-16 pb-12 md:pb-16 bg-transparent">
   <div className="max-w-7xl mx-auto">
-    <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+    <h2
+      className="text-3xl md:text-4xl text-center mb-16"
+      style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontStyle: 'normal' }}
+    >
       Best Sellers
     </h2>
 
     <div className="overflow-hidden">
-      <div className="flex gap-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory lg:grid lg:grid-cols-3 lg:gap-8">
-        {products.slice(0, 6).map((p) => (
+      <div className="flex gap-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
+            {products.map((p) => (
           <Link
             key={p.ID}
             href={`/product/${encodeURIComponent(p.Description)}`}
-            className="flex-none w-[280px] md:w-[calc(50%-12px)] lg:w-auto flex flex-col items-center snap-center px-2"
+            className="flex-none w-[280px] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-1rem)] flex flex-col items-center snap-center px-2"
           >
-            <div className="aspect-square border border-gray-300 rounded-xl mb-3 overflow-hidden w-full max-w-xs bg-white">
+            <div className="aspect-square border border-gray-300 rounded-none mb-3 overflow-hidden w-full max-w-xs bg-white">
               <img
                 src={p.ImageUrl1}
                 alt={p.Description}
@@ -137,17 +152,17 @@ export default function Home() {
               />
             </div>
 
-            <div className="truncate text-gray-900 font-semibold text-base md:text-lg mb-1 w-full text-center">
-              {p.Description}
+            <div className="truncate text-gray-900 text-base md:text-lg mb-1 w-full text-center">
+              {p.ProductName || p.Description}
             </div>
 
             <div className="mt-1 text-center">
-              {p.OriginalPrice && (
+              {p.OriginalPrice && p.OriginalPrice !== p.Price && (
                 <span className="line-through text-gray-400 mr-2">
                   ₹{p.OriginalPrice}
                 </span>
               )}
-              <span className="text-[#d4af37] font-semibold">
+              <span className="text-black font-semibold">
                 ₹{p.Price}
               </span>
             </div>
@@ -161,7 +176,10 @@ export default function Home() {
 {/* NEW ARRIVALS */}
 <section className="text-black px-6 md:px-10 pt-24">
   <div className="max-w-7xl mx-auto">
-    <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+    <h2
+      className="text-3xl md:text-4xl text-center mb-16"
+      style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontStyle: 'normal' }}
+    >
       New Arrivals
     </h2>
 
@@ -173,7 +191,7 @@ export default function Home() {
             href={`/product/${encodeURIComponent(p.Description)}`}
             className="flex-none w-[280px] md:w-[calc(50%-12px)] lg:w-auto flex flex-col items-center snap-center px-2"
           >
-            <div className="aspect-square border border-gray-300 rounded-xl mb-3 overflow-hidden w-full max-w-xs bg-white">
+            <div className="aspect-square border border-gray-300 rounded-none mb-3 overflow-hidden w-full max-w-xs bg-white">
               <img
                 src={p.ImageUrl1}
                 alt={p.Description}
@@ -181,17 +199,17 @@ export default function Home() {
               />
             </div>
 
-            <div className="truncate text-gray-900 font-semibold text-base md:text-lg mb-1 w-full text-center">
-              {p.Description}
+            <div className="truncate text-gray-900 text-base md:text-lg mb-1 w-full text-center">
+              {p.ProductName || p.Description}
             </div>
 
             <div className="mt-1 text-center">
-              {p.OriginalPrice && (
+              {p.OriginalPrice && p.OriginalPrice !== p.Price && (
                 <span className="line-through text-gray-400 mr-2">
                   ₹{p.OriginalPrice}
                 </span>
               )}
-              <span className="text-[#d4af37] font-semibold">
+              <span className="text-black font-semibold">
                 ₹{p.Price}
               </span>
             </div>
@@ -209,7 +227,7 @@ export default function Home() {
       {!loading && !adminLoading && isAdmin && (
         <Link
           href="/inventory"
-          className="fixed right-6 bottom-6 z-40 rounded-full bg-white text-black px-6 py-3 shadow-2xl hover:bg-gray-200 font-semibold transition-colors"
+          className="fixed right-6 bottom-6 z-40 rounded-none bg-white text-black px-6 py-3 shadow-2xl hover:bg-gray-200 font-semibold transition-colors"
         >
           Inventory
         </Link>
