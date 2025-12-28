@@ -211,6 +211,67 @@ export default function CartPage() {
   const subtotal = grandTotal;
   const total = subtotal + shippingAmount;
 
+  // Ensure all cart items are within available stock.
+  // If any are not, silently remove them from the cart.
+  function hasSufficientStock() {
+    if (!items.length) return false;
+
+    const nextItems: CartItem[] = [];
+    const removedItems: CartItem[] = [];
+
+    items.forEach((item) => {
+      const prod = inventoryMap[String(item.ID)];
+      const qty = Number(item.Quantity || 0);
+
+      if (!prod || !qty || qty <= 0) {
+        removedItems.push(item);
+        return;
+      }
+
+      let sizeStock: number | undefined;
+      const size = (item.Size || "").toUpperCase();
+      if (size === "S") sizeStock = prod.StockS;
+      else if (size === "M") sizeStock = prod.StockM;
+      else if (size === "L") sizeStock = prod.StockL;
+      else if (size === "XL") sizeStock = prod.StockXL;
+
+      const maxAllowed =
+        (typeof sizeStock === "number" ? sizeStock : undefined) ??
+        (typeof prod.Stock === "number" ? prod.Stock : undefined);
+
+      if (typeof maxAllowed === "number" && (maxAllowed <= 0 || qty > maxAllowed)) {
+        removedItems.push(item);
+        return;
+      }
+
+      nextItems.push(item);
+    });
+
+    if (removedItems.length > 0) {
+      // Persist the cleaned-up cart for guest vs logged-in users
+      if (user && user.email && db) {
+        setItems(nextItems);
+        removedItems.forEach((item) => {
+          if (item.docId) {
+            deleteDoc(firestoreDoc(db, "Cart", item.docId)).catch((e) => {
+              console.error("hasSufficientStock Firestore cleanup error", e);
+            });
+          }
+        });
+      } else {
+        persistGuest(nextItems);
+      }
+    }
+
+    // If nothing is left after cleanup, don't proceed to checkout
+    if (nextItems.length === 0 && removedItems.length > 0) {
+      return false;
+    }
+
+    // No removals or still have valid items
+    return true;
+  }
+
   function persistGuest(next: CartItem[]) {
     writeGuestCartToCookie(next || []);
     setItems(next || []); 
@@ -469,7 +530,10 @@ export default function CartPage() {
 
             <button
               type="button"
-              onClick={() => router.push("/checkout")}
+              onClick={() => {
+                if (!hasSufficientStock()) return;
+                router.push("/checkout");
+              }}
               className="w-full bg-black text-white py-3 rounded-md text-sm font-semibold tracking-wide hover:opacity-95"
             >
               Proceed to Checkout

@@ -292,6 +292,40 @@ if (storedBuyNow) {
       return;
     }
 
+    // Final stock validation before placing order
+    const stockIssues: string[] = [];
+    items.forEach((item) => {
+      const prod: any = inventoryMap[String(item.ID)];
+      if (!prod) return;
+
+      const qty = Number(item.Quantity || 0);
+      if (!qty || qty <= 0) return;
+
+      let sizeStock: number | undefined;
+      const size = (item.Size || "").toUpperCase();
+      if (size === "S") sizeStock = prod.StockS;
+      else if (size === "M") sizeStock = prod.StockM;
+      else if (size === "L") sizeStock = prod.StockL;
+      else if (size === "XL") sizeStock = prod.StockXL;
+
+      const maxAllowed =
+        (typeof sizeStock === "number" ? sizeStock : undefined) ??
+        (typeof prod.Stock === "number" ? prod.Stock : undefined);
+
+      if (typeof maxAllowed === "number" && qty > maxAllowed) {
+        const label = prod.Description || prod.Product || `Item ${item.ID}`;
+        stockIssues.push(`${label} (${size || ""}) - only ${maxAllowed} left`);
+      }
+    });
+
+    if (stockIssues.length > 0) {
+      alert(
+        "Some items are out of stock or exceed available quantity. Please adjust your cart:\n\n" +
+          stockIssues.join("\n")
+      );
+      return;
+    }
+
     const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
     if (!razorpayKeyId) {
       alert("Payment setup issue: Razorpay key is not configured. Please contact support.");
