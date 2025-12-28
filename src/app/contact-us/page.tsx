@@ -47,10 +47,10 @@ export default function FAQPage() {
   };
 
   return (
-    <div className="bg-white min-h-screen">
-      <main className="px-4 py-12 max-w-6xl mx-auto">
+    <div className="bg-white min-h-screen flex flex-col">
+      <main className="px-0 sm:px-4 py-12 max-w-6xl mx-auto flex-1">
         {/* Contact Details Section */}
-        <div className="mb-12">
+        <div>
           <div className="flex justify-between items-start mb-6">
             <h1 className="text-3xl md:text-4xl font-semibold text-black">Contact Us</h1>
             <button 
@@ -61,9 +61,9 @@ export default function FAQPage() {
             </button>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 items-start">
+          <div className="grid sm:grid-cols-3 gap-6 md:gap-8 items-start">
             {/* Contact Details */}
-            <div className="bg-[#ffd1dc] border-2 border-pink-200 rounded-lg p-6 md:col-span-1 shadow-sm">
+            <div className="bg-[#ffd1dc] border-2 border-pink-200 rounded-lg p-6 sm:col-span-1 shadow-sm">
               <h2 className="text-xl font-semibold text-black mb-4">Get in Touch</h2>
               <div className="space-y-3 text-black">
                 
@@ -83,7 +83,7 @@ export default function FAQPage() {
             </div>
 
             {/* Ask Directly Form */}
-            <div className="bg-pink-50 border-2 border-pink-100 rounded-lg p-6 md:col-span-2 shadow-sm">
+            <div className="bg-pink-50 border-2 border-pink-100 rounded-lg p-6 sm:col-span-2 shadow-sm">
               <h2 className="text-xl font-semibold text-black mb-4">Ask Directly</h2>
               
               {sent && (

@@ -54,7 +54,7 @@ function Marquee() {
 // Footer Component
 function Footer() {
   return (
-    <footer className="bg-black text-white mt-20 py-8 px-4 w-full">
+    <footer className="bg-black text-white mt-8 py-8 px-4 w-full">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-8 text-left items-start">
           
