@@ -25,6 +25,10 @@ type Product = {
   ImageUrl1?: string;
   ImageUrl2?: string;
   ImageUrl3?: string;
+  StockS?: number;
+  StockM?: number;
+  StockL?: number;
+  StockXL?: number;
 };
 
 export default function ProductPage() {
@@ -40,6 +44,8 @@ export default function ProductPage() {
   const [imageIndex, setImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [cartQuantity, setCartQuantity] = useState(0);
+  const [showAdded, setShowAdded] = useState(false);
 
   // Fetch product
   useEffect(() => {
@@ -61,6 +67,36 @@ export default function ProductPage() {
 
     fetchProduct();
   }, [description]);
+
+  // Reset quantity when size changes
+  useEffect(() => {
+    setQuantity(1);
+  }, [selectedSize]);
+
+  // Fetch cart quantity for this product and size
+  useEffect(() => {
+    const fetchCartQuantity = async () => {
+      if (!user?.email || !db || !product) return;
+
+      const cartRef = collection(db!, "Cart");
+      const q = query(
+        cartRef,
+        where("UserMail", "==", user.email),
+        where("ID", "==", product.ID),
+        where("Size", "==", selectedSize)
+      );
+
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const cartItem = snap.docs[0].data();
+        setCartQuantity(cartItem.Quantity || 0);
+      } else {
+        setCartQuantity(0);
+      }
+    };
+
+    fetchCartQuantity();
+  }, [user?.email, product, selectedSize]);
 
   // Fetch related products
   useEffect(() => {
@@ -102,71 +138,102 @@ export default function ProductPage() {
   }
 
   const images = [
-    product.ImageUrl1,
+    product.ImageUrl1 || "/placeholder.png",
     product.ImageUrl2,
     product.ImageUrl3,
   ].filter(Boolean) as string[];
 
-  const nextImage = () =>
-    setImageIndex((prev) => (prev + 1) % images.length);
+  // Get available stock for selected size (accounting for items already in cart)
+  const getAvailableStock = () => {
+    const totalStock = (() => {
+      switch (selectedSize) {
+        case "S":
+          return product.StockS || 0;
+        case "M":
+          return product.StockM || 0;
+        case "L":
+          return product.StockL || 0;
+        case "XL":
+          return product.StockXL || 0;
+        default:
+          return 0;
+      }
+    })();
+    return Math.max(0, totalStock - cartQuantity);
+  };
+
+  const availableStock = getAvailableStock();
+
+  const nextImage = () => setImageIndex((prev) => (prev + 1) % images.length);
   const prevImage = () =>
     setImageIndex((prev) => (prev - 1 + images.length) % images.length);
 
   const handleAddToCart = async () => {
-  if (!user?.email || !db) {
-    sessionStorage.setItem(
-      "postAuthAction",
-      JSON.stringify({
-        type: "ADD_TO_CART",
-        payload: {
-          productId: product.ID,
-          quantity,
-          size: selectedSize,
-        },
-        redirectTo: "/cart",
-      })
+    // Check stock availability
+    if (availableStock === 0) {
+      alert("This size is out of stock");
+      return;
+    }
+
+    if (quantity > availableStock) {
+      alert(`Only ${availableStock} items available in size ${selectedSize}`);
+      return;
+    }
+
+    if (!user?.email || !db) {
+      sessionStorage.setItem(
+        "postAuthAction",
+        JSON.stringify({
+          type: "ADD_TO_CART",
+          payload: {
+            productId: product.ID,
+            quantity,
+            size: selectedSize,
+          },
+          redirectTo: "/cart",
+        })
+      );
+
+      router.push("/sign-in");
+      return;
+    }
+
+    const cartRef = collection(db!, "Cart");
+
+    const q = query(
+      cartRef,
+      where("UserMail", "==", user.email),
+      where("ID", "==", product.ID),
+      where("Size", "==", selectedSize)
     );
 
-    router.push("/sign-in");
-    return;
-  }
+    const snap = await getDocs(q);
 
-  const cartRef = collection(db!, "Cart");
+    if (!snap.empty) {
+      const docRef = snap.docs[0].ref;
+      const prevQty = snap.docs[0].data().Quantity || 0;
 
-  const q = query(
-    cartRef,
-    where("UserMail", "==", user.email),
-    where("ID", "==", product.ID),
-    where("Size", "==", selectedSize)
-  );
+      await updateDoc(docRef, {
+        Quantity: prevQty + quantity,
+        ["Added On"]: serverTimestamp(),
+      });
+    } else {
+      await addDoc(cartRef, {
+        ID: product.ID,
+        Quantity: quantity,
+        Size: selectedSize,
+        UserMail: user.email,
+        ["Added On"]: serverTimestamp(),
+      });
+    }
 
-  const snap = await getDocs(q);
+    for (let i = 0; i < quantity; i++) {
+      addItem(String(product.ID));
+    }
 
-  if (!snap.empty) {
-    const docRef = snap.docs[0].ref;
-    const prevQty = snap.docs[0].data().Quantity || 0;
-
-    await updateDoc(docRef, {
-      Quantity: prevQty + quantity,
-      ["Added On"]: serverTimestamp(),
-    });
-  } else {
-    await addDoc(cartRef, {
-      ID: product.ID,
-      Quantity: quantity,
-      Size: selectedSize,
-      UserMail: user.email,
-      ["Added On"]: serverTimestamp(),
-    });
-  }
-
-  for (let i = 0; i < quantity; i++) {
-    addItem(String(product.ID));
-  }
-
-  router.push("/cart");
-};
-
+    setShowAdded(true);
+    setTimeout(() => setShowAdded(false), 2000);
+  };
 
   return (
     <>
@@ -184,12 +251,11 @@ export default function ProductPage() {
           <div>
             <div className="relative bg-gray-50 border rounded-xl p-4 sm:p-6">
               <img
-  src={images[imageIndex]}
-  alt={product.Description}
-  className="w-full h-[300px] sm:h-[420px] lg:h-[520px] object-contain cursor-zoom-in"
-  onClick={() => setZoomImage(images[imageIndex])}
-/>
-
+                src={images[imageIndex] || "/placeholder.png"}
+                alt={product.Description}
+                className="w-full h-[300px] sm:h-[420px] lg:h-[520px] object-contain cursor-zoom-in"
+                onClick={() => setZoomImage(images[imageIndex] || "/placeholder.png")}
+              />
 
               {images.length > 1 && (
                 <>
@@ -214,7 +280,7 @@ export default function ProductPage() {
               {images.map((img, i) => (
                 <img
                   key={i}
-                  src={img}
+                  src={img || "/placeholder.png"}
                   onClick={() => setImageIndex(i)}
                   className={`h-20 w-20 sm:h-24 sm:w-24 object-contain rounded cursor-pointer border-2 ${
                     i === imageIndex ? "border-black" : "border-transparent"
@@ -244,17 +310,24 @@ export default function ProductPage() {
             {/* QUANTITY */}
             <div className="mb-6">
               <p className="font-semibold mb-2">Quantity:</p>
+              {availableStock === 0 && (
+                <p className="text-sm text-red-500 mb-2">
+                  Out of stock in size {selectedSize}
+                </p>
+              )}
               <div className="flex items-center gap-4 flex-wrap border rounded-full w-fit px-6 py-3">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   className="text-xl font-bold"
+                  disabled={availableStock === 0}
                 >
                   −
                 </button>
                 <span className="font-semibold">{quantity}</span>
                 <button
-                  onClick={() => setQuantity((q) => q + 1)}
+                  onClick={() => setQuantity((q) => Math.min(availableStock, q + 1))}
                   className="text-xl font-bold"
+                  disabled={availableStock === 0 || quantity >= availableStock}
                 >
                   +
                 </button>
@@ -264,12 +337,7 @@ export default function ProductPage() {
             {/* SIZE */}
             <div className="mb-6">
               <p className="font-semibold mb-2">Size:</p>
-              <button
-  onClick={() => setShowSizeChart(true)}
-  className="text-sm underline font-bold text-gray-600 hover:text-black"
->
-  View Size Chart
-</button>
+              {/* View Size Chart removed */}
               <div className="flex gap-3 flex-wrap">
                 {["S", "M", "L", "XL"].map((size) => (
                   <button
@@ -286,51 +354,75 @@ export default function ProductPage() {
                 ))}
               </div>
             </div>
-            
 
             <button
               onClick={handleAddToCart}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 py-4 rounded-xl font-semibold mb-4"
+              disabled={availableStock === 0}
+              className={`w-full py-4 rounded-xl font-semibold mb-4 ${
+                availableStock === 0
+                  ? "bg-gray-400 cursor-not-allowed text-gray-600"
+                  : "bg-indigo-600 hover:bg-indigo-700 text-white"
+              }`}
             >
-              Add to Cart
+              {availableStock === 0 ? "Out of Stock" : "Add to Cart"}
             </button>
+            {showAdded && (
+              <div className="text-green-600 text-center font-semibold mb-4">
+                Added to Cart!
+              </div>
+            )}
 
             <button
-  onClick={() => {
-    if (!user?.email) {
-      sessionStorage.setItem(
-        "postAuthAction",
-        JSON.stringify({
-          type: "BUY_NOW",
-          payload: {
-            productId: product.ID,
-            quantity,
-            size: selectedSize,
-          },
-          redirectTo: "/checkout",
-        })
-      );
+              onClick={() => {
+                // Check stock availability
+                if (availableStock === 0) {
+                  alert("This size is out of stock");
+                  return;
+                }
 
-      router.push("/sign-in");
-      return;
-    }
+                if (quantity > availableStock) {
+                  alert(`Only ${availableStock} items available in size ${selectedSize}`);
+                  return;
+                }
 
-    sessionStorage.setItem(
-      "buyNowItem",
-      JSON.stringify({
-        productId: product.ID,
-        quantity,
-        size: selectedSize,
-      })
-    );
+                if (!user?.email) {
+                  sessionStorage.setItem(
+                    "postAuthAction",
+                    JSON.stringify({
+                      type: "BUY_NOW",
+                      payload: {
+                        productId: product.ID,
+                        quantity,
+                        size: selectedSize,
+                      },
+                      redirectTo: "/checkout",
+                    })
+                  );
 
-    router.push("/checkout");
-  }}
-  className="w-full bg-indigo-500 hover:bg-indigo-600 py-4 rounded-xl font-semibold"
->
-  Buy Now
-</button>
+                  router.push("/sign-in");
+                  return;
+                }
 
+                sessionStorage.setItem(
+                  "buyNowItem",
+                  JSON.stringify({
+                    productId: product.ID,
+                    quantity,
+                    size: selectedSize,
+                  })
+                );
+
+                router.push("/checkout");
+              }}
+              disabled={availableStock === 0}
+              className={`w-full py-4 rounded-xl font-semibold ${
+                availableStock === 0
+                  ? "bg-gray-400 cursor-not-allowed text-gray-600"
+                  : "bg-indigo-500 hover:bg-indigo-600 text-white"
+              }`}
+            >
+              {availableStock === 0 ? "Out of Stock" : "Buy Now"}
+            </button>
           </div>
         </div>
       </div>
@@ -352,7 +444,7 @@ export default function ProductPage() {
                 className="cursor-pointer bg-gray-50 border rounded-xl p-4 text-black hover:scale-105 transition"
               >
                 <img
-                  src={rp.ImageUrl1}
+                  src={rp.ImageUrl1 || "/placeholder.png"}
                   alt={rp.Description}
                   className="h-36 sm:h-44 lg:h-48 w-full object-contain mb-3"
                 />
@@ -364,55 +456,54 @@ export default function ProductPage() {
         </div>
       )}
       {showSizeChart && (
-  <div
-    className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-4"
-    onClick={() => setShowSizeChart(false)}
-  >
-    <div
-      className="relative bg-white rounded-lg max-w-2xl w-full p-4"
-      onClick={(e) => e.stopPropagation()} // prevents closing when clicking image
-    >
-      {/* Close button */}
-      <button
-        onClick={() => setShowSizeChart(false)}
-        className="absolute top-3 right-3 text-black text-xl font-bold"
-      >
-        ✕
-      </button>
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-4"
+          onClick={() => setShowSizeChart(false)}
+        >
+          <div
+            className="relative bg-white rounded-lg max-w-2xl w-full p-4"
+            onClick={(e) => e.stopPropagation()} // prevents closing when clicking image
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setShowSizeChart(false)}
+              className="absolute top-3 right-3 text-black text-xl font-bold"
+            >
+              ✕
+            </button>
 
-      <img
-        src="/printrove-size-chart.jpg"
-        alt="Printrove Size Chart"
-        className="w-full h-auto rounded"
-      />
-    </div>
-  </div>
-)}
- {zoomImage && (
-  <div
-    className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center px-4"
-    onClick={() => setZoomImage(null)}
-  >
-    <div
-      className="relative max-w-4xl w-full"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <button
-        onClick={() => setZoomImage(null)}
-        className="absolute top-3 right-3 text-white text-2xl font-bold"
-      >
-        ✕
-      </button>
+            <img
+              src="/printrove-size-chart.jpg"
+              alt="Printrove Size Chart"
+              className="w-full h-auto rounded"
+            />
+          </div>
+        </div>
+      )}
+      {zoomImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center px-4"
+          onClick={() => setZoomImage(null)}
+        >
+          <div
+            className="relative max-w-4xl w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setZoomImage(null)}
+              className="absolute top-3 right-3 text-white text-2xl font-bold"
+            >
+              ✕
+            </button>
 
-      <img
-        src={zoomImage}
-        alt="Zoomed product"
-        className="w-full max-h-[90vh] object-contain cursor-zoom-out"
-      />
-    </div>
-  </div>
-)}
-
+            <img
+              src={zoomImage || "/placeholder.png"}
+              alt="Zoomed product"
+              className="w-full max-h-[90vh] object-contain cursor-zoom-out"
+            />
+          </div>
+        </div>
+      )}
 
       <ReviewCarousel />
     </>
