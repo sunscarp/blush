@@ -123,7 +123,7 @@ export default function RootLayout({
       <body
   className={`${montserrat.variable} font-montserrat antialiased min-h-screen bg-fixed bg-center bg-cover text-gray-900`}
   style={{
-    backgroundImage: "url('/blush theme.png')",
+    backgroundImage: "url('/Blush%20theme.png')",
     backgroundRepeat: 'no-repeat',
     backgroundSize: 'cover',
     backgroundPosition: 'center center',
