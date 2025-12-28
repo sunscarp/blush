@@ -521,319 +521,192 @@ if (storedBuyNow) {
   }
 
   return (
-    <div className="min-h-screen bg-white py-6 lg:py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white text-black">
+      <div className="max-w-md mx-auto px-4 py-6">
         {/* Header */}
-        <div className="text-center mb-8 lg:mb-12">
-          <h1 className="text-3xl lg:text-4xl font-bold text-black mb-2">Checkout</h1>
-          <p className="text-gray-600 text-sm lg:text-base">Complete your order securely</p>
-        </div>
+        <header className="mb-6 flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Checkout</h1>
+          <span className="text-xs text-gray-500">
+            {items.length} item{items.length === 1 ? "" : "s"}
+          </span>
+        </header>
 
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 lg:gap-8">
-          {/* Customer Details Form */}
-          <div className="xl:col-span-3">
-            <div className="bg-white border border-gray-200 rounded-2xl shadow overflow-hidden">
-              <div className="px-6 py-5 lg:px-8 lg:py-6 border-b border-gray-200">
-                <h2 className="text-xl lg:text-2xl font-bold text-black">Billing Information</h2>
-                <p className="text-gray-600 text-sm mt-1">Please fill in your details below</p>
+        {/* Shipping Details */}
+        <section className="border rounded-lg mb-6">
+          <div className="px-4 py-3 border-b text-sm font-semibold tracking-wide uppercase text-gray-700">
+            Shipping Details
+          </div>
+          <div className="px-4 py-4 space-y-4 text-sm">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={customerDetails.name}
+                onChange={(e) => handleInputChange("name", e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm placeholder-gray-400"
+                placeholder="Enter your full name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                value={customerDetails.email}
+                onChange={(e) => handleInputChange("email", e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm placeholder-gray-400"
+                placeholder="you@example.com"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                Phone
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-xs text-gray-700 select-none">
+                  +91
+                </span>
+                <input
+                  type="tel"
+                  value={customerDetails.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm placeholder-gray-400"
+                  placeholder="10 digit mobile number"
+                  maxLength={10}
+                  pattern="[0-9]{10}"
+                />
               </div>
-              
-              <div className="px-6 py-6 lg:px-8 lg:py-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-black mb-3">
-                      Full Name <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={customerDetails.name}
-                      onChange={(e) => handleInputChange("name", e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-black rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 placeholder-gray-500"
-                      placeholder="Enter your full name"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-semibold text-black mb-3">
-                      Email Address <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      value={customerDetails.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-black rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 placeholder-gray-500"
-                      placeholder="you@example.com"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-semibold text-black mb-3">
-                      Phone Number <span className="text-red-400">*</span>
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <span className="px-3 py-3 bg-gray-50 border border-gray-300 text-black rounded-l-lg select-none">+91</span>
-                      <input
-                        type="tel"
-                        value={customerDetails.phone}
-                        onChange={(e) => handleInputChange("phone", e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-black rounded-r-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 placeholder-gray-500"
-                        placeholder="10 digit mobile number"
-                        required
-                        maxLength={10}
-                        pattern="[0-9]{10}"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-black mb-3">
-                      Complete Address <span className="text-red-400">*</span>
-                    </label>
-                    <textarea
-                      value={customerDetails.address}
-                      onChange={(e) => handleInputChange("address", e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-black rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 placeholder-gray-500 resize-none"
-                      rows={3}
-                      placeholder="Street address, city, state"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-black mb-3">
-                      Pin Code <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={customerDetails.pinCode}
-                      onChange={(e) => handleInputChange("pinCode", e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-black rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 placeholder-gray-500"
-                      placeholder="6 digit PIN code"
-                      required
-                      maxLength={6}
-                      pattern="[0-9]{6}"
-                    />
-                  </div>
-                </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                Address
+              </label>
+              <textarea
+                value={customerDetails.address}
+                onChange={(e) => handleInputChange("address", e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm placeholder-gray-400 resize-none"
+                rows={2}
+                placeholder="Street, area, city"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  PIN Code
+                </label>
+                <input
+                  type="text"
+                  value={customerDetails.pinCode}
+                  onChange={(e) => handleInputChange("pinCode", e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm placeholder-gray-400"
+                  placeholder="6 digit PIN"
+                  maxLength={6}
+                  pattern="[0-9]{6}"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  State / City
+                </label>
+                <select className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-700">
+                  <option value="">Select</option>
+                  <option value="mumbai">Mumbai</option>
+                  <option value="delhi">Delhi</option>
+                  <option value="bangalore">Bengaluru</option>
+                  <option value="other">Other</option>
+                </select>
               </div>
             </div>
           </div>
+        </section>
 
-          {/* Order Summary */}
-          <div className="xl:col-span-2">
-            <div className="bg-white border border-gray-200 rounded-2xl shadow overflow-hidden sticky top-6">
-              <div className="px-6 py-5 lg:px-8 lg:py-6 border-b border-gray-200">
-                <h2 className="text-xl lg:text-2xl font-bold text-black">Order Summary</h2>
-                <p className="text-gray-600 text-sm mt-1">{items.length} item{items.length !== 1 ? 's' : ''} in your order</p>
-                {/* Discount Code Input */}
-                <div className="mt-4 flex flex-col gap-2">
-                  <label htmlFor="discount-code" className="text-sm text-gray-600 font-semibold">Discount Code</label>
-                  <div className="flex gap-2">
-                    <input
-                      id="discount-code"
-                      type="text"
-                      value={discountCode}
-                      onChange={e => setDiscountCode(e.target.value)}
-                      className="px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-black focus:ring-2 focus:ring-black focus:border-transparent text-sm"
-                      placeholder="Enter code"
-                      autoComplete="off"
-                      disabled={discountCodeStatus === "checking"}
-                    />
-                    <button
-                      type="button"
-                      className="px-4 py-2 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 text-sm"
-                      disabled={!discountCode || discountCodeStatus === "checking"}
-                      onClick={async () => {
-                        setDiscountCodeStatus("checking");
-                        try {
-                          const q = query(collection(db!, "discount-code"), where("Code", "==", discountCode));
-                          const snap = await getDocs(q);
-                          if (!snap.empty) {
-                            const doc = snap.docs[0].data();
-                            setDiscountPercent(Number(doc.Discount) || 0);
-                            setDiscountCodeStatus("valid");
-                          } else {
-                            setDiscountPercent(0);
-                            setDiscountCodeStatus("invalid");
-                          }
-                        } catch (e) {
-                          setDiscountPercent(0);
-                          setDiscountCodeStatus("invalid");
-                        }
-                      }}
-                    >Apply</button>
-                  </div>
-                  {discountCodeStatus === "valid" && (
-                    <span className="text-green-600 text-xs">Code applied! {discountPercent}% off</span>
-                  )}
-                  {discountCodeStatus === "invalid" && (
-                    <span className="text-red-600 text-xs">Invalid code</span>
-                  )}
-                  {discountCodeStatus === "checking" && (
-                    <span className="text-gray-600 text-xs">Checking...</span>
-                  )}
-                </div>
-              </div>
-              
-              <div className="px-6 py-6 lg:px-8 lg:py-6">
-                <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
-                  {items.map((item) => {
-                    const key = String(item.ID);
-                    const prod = inventoryMap[key];
-                    const img = prod?.ImageUrl1 || prod?.ImageUrl2 || prod?.ImageUrl3 || "/favicon.ico";
-                    const basePrice = prod?.Price != null ? Number(prod.Price) : 0;
-                    const customPrice = item.isCustomized && item.customPrice ? Number(item.customPrice) : 0;
-                    const totalPrice = basePrice + customPrice;
-                    const qty = Number(item.Quantity || 0);
-                    const total = totalPrice * qty;
+        {/* Order Summary */}
+        <section className="border rounded-lg mb-6">
+          <div className="px-4 py-3 border-b text-sm font-semibold tracking-wide uppercase text-gray-700">
+            Order Summary
+          </div>
+          <div className="px-4 py-3 text-sm">
+            <ul className="divide-y divide-gray-200 mb-3">
+              {items.map((item) => {
+                const key = String(item.ID);
+                const prod = inventoryMap[key];
+                const basePrice = prod?.Price != null ? Number(prod.Price) : 0;
+                const customPrice = item.isCustomized && item.customPrice ? Number(item.customPrice) : 0;
+                const linePrice = (basePrice + customPrice) * Number(item.Quantity || 0);
 
-                    return (
-                      <div key={String(item.docId ?? item.ID)} className="flex gap-4 pb-4 border-b border-gray-200 last:border-b-0">
-                        <div className="relative">
-                          <img 
-                            src={img} 
-                            alt={prod?.Product ?? `item-${key}`} 
-                            className="h-16 w-16 lg:h-20 lg:w-20 object-cover rounded-lg border border-gray-300"
-                          />
-                          <div className="pointer-events-none select-none flex items-center justify-center w-full" style={{ position: 'absolute', bottom: 0, right: 0, left: 0 }}>
-                            <span className="inline-flex items-center px-2.5 py-1 mb-[-0.5rem] rounded-full bg-gray-100 border border-gray-200 shadow text-xs font-semibold text-black min-w-[1.5rem] justify-center">
-                              x{qty}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-black truncate text-sm lg:text-base">{prod?.Product ?? `Item ${key}`}</p>
-                          {prod?.Description && (
-                            <p className="text-xs lg:text-sm text-gray-600 truncate mt-1">{prod.Description}</p>
-                          )}
-                          {item.Size && <p className="text-xs text-gray-600 mt-1">Size: {item.Size}</p>}
-                          
-                          {item.isCustomized && qty === 1 && (
-                            <div className="mt-2">
-                              <button
-                                onClick={() => setShowCustomFor(prev => ({ ...prev, [key]: !prev[key] }))}
-                                className="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-100 transition-all duration-200 text-xs"
-                              >
-                                <svg
-                                  className={`h-3 w-3 transform ${showCustomFor[key] ? "rotate-180" : "rotate-0"} transition-transform`}
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                                Custom Details
-                              </button>
-
-                              <div className={`mt-2 overflow-hidden transition-all duration-200 ${showCustomFor[key] ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
-                                <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                                  <p className="text-xs text-gray-600 break-words">"{item.customizationText || 'No details provided.'}"</p>
-                                  {item.customPrice != null && (
-                                    <p className="text-xs text-gray-600 mt-1">Additional: {formatCurrency(Number(item.customPrice))}</p>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <div className="flex flex-col items-end">
-                            <div>
-                              {prod?.OriginalPrice && (
-                                <span className="line-through text-gray-500 mr-1">{formatCurrency(Number(prod.OriginalPrice))}</span>
-                              )}
-                              <span className="text-yellow-600 font-bold text-sm lg:text-base">{formatCurrency(basePrice)}</span>
-                            </div>
-                            <p className="font-bold text-black text-xs lg:text-sm mt-1">{formatCurrency(total)}</p>
-                          </div>
-                          {customPrice > 0 && (
-                            <div className="text-xs text-gray-600 mt-1">
-                              <div>{formatCurrency(basePrice)} base</div>
-                              <div>+{formatCurrency(customPrice)} custom</div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="border-t border-gray-700 pt-4 mb-6">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="text-black font-semibold">{formatCurrency(grandTotal)}</span>
-                  </div>
-                  {discountAmount > 0 && (
-                    <div className="flex justify-between items-center mt-2">
-                      <span className="text-gray-600">Discount ({discountPercent}%)</span>
-                      <span className="text-green-600 font-semibold">- {formatCurrency(discountAmount)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between items-center mt-2">
-                    <span className="text-gray-600">Shipping</span>
-                    <span className="text-green-600 font-semibold">Free</span>
-                  </div>
-                  <div className="border-t border-gray-200 mt-4 pt-4">
-                    <div className="flex justify-between items-center text-xl font-bold">
-                      <span className="text-black">Total</span>
-                      {discountAmount > 0 ? (
-                        <span>
-                          <span className="line-through text-gray-500 mr-2">{formatCurrency(grandTotal)}</span>
-                          <span className="text-green-600 font-bold">{formatCurrency(discountedTotal)}</span>
-                        </span>
-                      ) : (
-                        <span className="text-black">{formatCurrency(grandTotal)}</span>
+                return (
+                  <li
+                    key={String(item.docId ?? item.ID)}
+                    className="py-2 flex items-center justify-between gap-4"
+                  >
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-900">
+                        • {prod?.Product ?? `Item ${key}`} {item.Quantity > 1 ? `× ${item.Quantity}` : ""}
+                      </p>
+                      {item.Size && (
+                        <p className="text-xs text-gray-500">Size: {item.Size}</p>
                       )}
                     </div>
-                  </div>
-                </div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {formatCurrency(linePrice)}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
 
-                <button
-                  onClick={handlePayment}
-                  disabled={!isFormValid() || orderStatus === "processing" || !razorpayLoaded}
-                  className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-200 transform ${
-                    isFormValid() && razorpayLoaded && orderStatus !== "processing"
-                      ? "bg-black text-white hover:bg-gray-800 hover:scale-105 shadow-lg"
-                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  }`}
-                >
-                  {orderStatus === "processing" ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle>
-                        <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" className="opacity-75"></path>
-                      </svg>
-                      Processing...
-                    </span>
-                  ) : (
-                    discountAmount > 0
-                      ? `Pay ${formatCurrency(discountedTotal)}`
-                      : `Pay ${formatCurrency(grandTotal)}`
-                  )}
-                </button>
-                
-                {!razorpayLoaded && (
-                  <p className="text-xs text-gray-500 mt-3 text-center">Initializing secure payment...</p>
-                )}
-                
-                {/* Security badges */}
-                <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-gray-700">
-                  <div className="flex items-center gap-1 text-gray-400 text-xs">
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                    SSL Secured
-                  </div>
-                  <div className="w-px h-4 bg-gray-600"></div>
-                  <div className="text-gray-400 text-xs">
-                    Powered by Razorpay
-                  </div>
-                </div>
+            <hr className="mb-2" />
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-gray-600">Subtotal</span>
+              <span className="font-medium">{formatCurrency(grandTotal)}</span>
+            </div>
+            {discountAmount > 0 && (
+              <div className="flex items-center justify-between mb-1 text-xs">
+                <span className="text-gray-600">Discount ({discountPercent}%)</span>
+                <span className="text-green-600 font-medium">- {formatCurrency(discountAmount)}</span>
               </div>
+            )}
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-gray-600">Shipping</span>
+              <span className="font-medium">Free</span>
+            </div>
+            <hr className="my-2" />
+            <div className="flex items-center justify-between text-base font-semibold">
+              <span>Total</span>
+              <span>
+                {formatCurrency(discountAmount > 0 ? discountedTotal : grandTotal)}
+              </span>
             </div>
           </div>
-        </div>
+        </section>
+
+        {/* Place Order Button */}
+        <button
+          onClick={handlePayment}
+          disabled={!isFormValid() || orderStatus === "processing" || !razorpayLoaded}
+          className={`w-full py-3 rounded-md text-sm font-semibold tracking-wide transition-colors ${
+            isFormValid() && razorpayLoaded && orderStatus !== "processing"
+              ? "bg-black text-white hover:bg-gray-900"
+              : "bg-gray-200 text-gray-400 cursor-not-allowed"
+          }`}
+        >
+          {orderStatus === "processing"
+            ? "Processing..."
+            : `Place Order • ${formatCurrency(discountAmount > 0 ? discountedTotal : grandTotal)}`}
+        </button>
+
+        {!razorpayLoaded && (
+          <p className="text-[11px] text-gray-500 mt-2 text-center">
+            Initializing secure payment...
+          </p>
+        )}
       </div>
     </div>
   );
