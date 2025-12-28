@@ -1,5 +1,5 @@
 "use client";
-
+import Image from "next/image";
 import { useEffect, useState, Suspense } from "react";
 import FAQModal from "@/components/FAQModal";
 import Link from "next/link";
@@ -186,7 +186,7 @@ function NavbarContent() {
         />
         {/* Sidebar */}
         <div
-          className={`fixed left-0 z-[60] bg-white shadow-xl transition-transform duration-300 ease-in-out w-full md:w-[360px] lg:w-[420px] ${
+          className={`fixed left-0 z-[60] bg-[#f6d6de] shadow-xl transition-transform duration-300 ease-in-out w-full md:w-[360px] lg:w-[420px] ${
             menuOpen ? "translate-x-0" : "-translate-x-full"
           }`}
           style={{
@@ -196,10 +196,10 @@ function NavbarContent() {
           }}
         >
           <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
-            <h2 className="text-lg sm:text-xl font-bold text-black">Menu</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-[#c9a24d]">Menu</h2>
             <button
               onClick={() => setMenuOpen(false)}
-              className="p-2 rounded-md hover:bg-gray-100 text-black min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="p-2 rounded-md hover:bg-gray-100 text-[#c9a24d] min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               <svg
                 className="w-6 h-6"
@@ -220,14 +220,14 @@ function NavbarContent() {
             <div className="space-y-2 sm:space-y-4">
               <Link
                 href="/"
-                className="block py-3 px-4 text-base sm:text-lg text-black hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+                className="block py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
                 onClick={(e) => { e.preventDefault(); setMenuOpen(false); window.location.href = '/'; }}
               >
                 Home
               </Link>
               <Link
                 href="/shop"
-                className="block py-3 px-4 text-base sm:text-lg text-black hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+                className="block py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
                 onClick={(e) => { e.preventDefault(); setMenuOpen(false); window.location.href = '/shop'; }}
               >
                 Shop
@@ -237,7 +237,7 @@ function NavbarContent() {
                   setMenuOpen(false);
                   router.push('/faq');
                 }}
-                className="block w-full text-left py-3 px-4 text-base sm:text-lg text-black hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+                className="block w-full text-left py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
               >
                 FAQ
               </button>
@@ -246,14 +246,14 @@ function NavbarContent() {
               <div className="border-t border-gray-200 pt-4 mt-6">
                 <Link
                   href="#"
-                  className="block py-3 px-4 text-base sm:text-lg text-black hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+                  className="block py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
                   onClick={() => setMenuOpen(false)}
                 >
                   Contact
                 </Link>
                 <Link
                   href="#"
-                  className="block py-3 px-4 text-base sm:text-lg text-black hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+                  className="block py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
                   onClick={() => setMenuOpen(false)}
                 >
                   Shipping Policy
@@ -266,7 +266,7 @@ function NavbarContent() {
                   <div className="border-t border-gray-200 pt-4 mt-6">
                     <Link
                       href="/orders"
-                      className="block py-3 px-4 text-base sm:text-lg text-black hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+                      className="block py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
                       onClick={() => {
                         setMenuOpen(false);
                         router.push('/orders');
@@ -279,7 +279,7 @@ function NavbarContent() {
                         setMenuOpen(false);
                         handleSignOut();
                       }}
-                      className="block w-full text-left py-3 px-4 text-base sm:text-lg text-black hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+                      className="block w-full text-left py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
                     >
                       Sign Out
                     </button>
@@ -288,7 +288,7 @@ function NavbarContent() {
                   <div className="border-t border-gray-200 pt-4 mt-6">
                     <Link
                       href="/sign-in"
-                      className="block py-3 px-4 text-base sm:text-lg text-black hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
+                      className="block py-3 px-4 text-base sm:text-lg text-[#c9a24d] hover:bg-gray-100 rounded-md transition-colors min-h-[48px] flex items-center"
                       onClick={() => {
                         setMenuOpen(false);
                         window.location.href = '/sign-in';
@@ -305,7 +305,7 @@ function NavbarContent() {
                 <div className="flex space-x-4 px-4">
                   <a
                     href="#"
-                    className="text-black hover:text-gray-600 transition-colors"
+                    className="text-[#c9a24d] hover:text-gray-600 transition-colors"
                     aria-label="Instagram"
                   >
                     <svg
@@ -505,12 +505,12 @@ function NavbarContent() {
       </div>
 
       <header
-        className={`static z-[80] bg-black border-b border-gray-800 transition-opacity duration-300 ${
+        className={`static z-[80] backdrop-blur-md border-b-6 border-[#c9a24d] transition-opacity duration-300 ${
           searchMenuOpen || !searchMenuReallyClosed ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
         }`}
       >
         {/* Main Navigation */}
-        <div className="flex items-center justify-between px-4 sm:px-6 md:px-10 py-3 sm:py-4 font-bold text-white">
+        <div className="relative flex items-center justify-between px-4 sm:px-6 md:px-10 py-3 sm:py-4 font-bold text-white">
           {/* Mobile/desktop responsive navbar */}
           <div className="flex w-full items-center justify-between relative min-h-[48px]">
             {/* Hamburger */}
@@ -521,31 +521,23 @@ function NavbarContent() {
                 aria-label="Menu"
               >
                 <div className="space-y-1">
-                  <div className="w-5 sm:w-6 h-0.5 bg-white"></div>
-                  <div className="w-5 sm:w-6 h-0.5 bg-white"></div>
-                  <div className="w-5 sm:w-6 h-0.5 bg-white"></div>
+                  <div className="w-5 sm:w-6 h-[2px] bg-[#c9a24d]"></div>
+                  <div className="w-5 sm:w-6 h-[2px] bg-[#c9a24d]"></div>
+                  <div className="w-5 sm:w-6 h-[2px] bg-[#c9a24d]"></div>
                 </div>
               </button>
             </div>
             {/* Brand Name - absolutely centered horizontally */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none select-none">
+            
               <Link
-                href="/"
-                className="text-lg sm:text-xl md:text-2xl font-bold hover:text-gray-300 transition-colors text-center pointer-events-auto select-auto"
-                style={{ lineHeight: '1', paddingTop: '10px', paddingBottom: '2px' }}
-                onClick={(e) => { e.preventDefault(); window.location.href = '/'; }}
-              >
-                <span className="flex flex-col items-center leading-none">
-  <span className="text-[10px] sm:text-xs tracking-[0.3em] text-gray-400 font-medium">
-    OTAKU
-  </span>
-  <span className="text-lg sm:text-xl md:text-2xl font-bold">
-    BALLERZ
-  </span>
-</span>
+  href="/"
+  className="block absolute left-1/2 -translate-x-1/2 text-xl md:text-2xl font-bold tracking-wide transition-colors"
+  style={{ color: '#c9a24d' }}
+>
+  BLUSH
+</Link>
 
-              </Link>
-            </div>
+            
             {/* Right side: Only show search, user, and cart on mobile */}
             <div className="flex items-center gap-2 sm:gap-3 md:gap-4 h-full">
               {/* 🔍 Search */}
@@ -560,9 +552,9 @@ function NavbarContent() {
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    strokeWidth={1.5}
+                    strokeWidth={2.5}
                     stroke="currentColor"
-                    className="w-5 sm:w-6 h-5 sm:h-6 text-white"
+                    className="w-5 sm:w-6 h-5 sm:h-6 text-[#c9a24d]"
                   >
                     <path
                       strokeLinecap="round"
@@ -596,9 +588,9 @@ function NavbarContent() {
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
-                        strokeWidth={1.5}
+                        strokeWidth={2.5}
                         stroke="currentColor"
-                        className="w-5 sm:w-6 h-5 sm:h-6 text-white"
+                        className="w-5 sm:w-6 h-5 sm:h-6 text-[#c9a24d]"
                       >
                         <path
                           strokeLinecap="round"
@@ -610,16 +602,16 @@ function NavbarContent() {
 
                     {/* User Dropdown */}
                     {userMenuOpen && (
-                      <div className="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                      <div className="absolute right-0 top-full mt-0 w-48 bg-[#f6d6de] rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                         <div className="px-4 py-2 border-b border-gray-100">
-                          <p className="text-sm font-medium text-gray-900 truncate">
+                          <p className="text-sm font-medium text-[#c9a24d] truncate">
                             {user.displayName || user.email?.split('@')[0] || 'User'}
                           </p>
-                          <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                          <p className="text-xs text-[#c9a24d] truncate">{user.email}</p>
                         </div>
                         <Link
                           href="/orders"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          className="flex items-center px-4 py-2 text-sm text-[#c9a24d] hover:bg-gray-100 transition-colors"
                           onClick={() => setUserMenuOpen(false)}
                         >
                           <svg
@@ -642,7 +634,7 @@ function NavbarContent() {
                             setUserMenuOpen(false);
                             handleSignOut();
                           }}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          className="flex items-center w-full px-4 py-2 text-sm text-[#c9a24d] hover:bg-gray-100 transition-colors"
                         >
                           <svg
                             className="w-4 h-4 mr-3"
@@ -672,9 +664,9 @@ function NavbarContent() {
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
-                      strokeWidth={1.5}
+                      strokeWidth={2.5}
                       stroke="currentColor"
-                      className="w-5 sm:w-6 h-5 sm:h-6 text-white"
+                      className="w-5 sm:w-6 h-5 sm:h-6 text-[#c9a24d]"
                     >
                       <path
                         strokeLinecap="round"
@@ -699,9 +691,9 @@ function NavbarContent() {
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  strokeWidth={1.5}
+                  strokeWidth={2.5}
                   stroke="currentColor"
-                  className="w-6 sm:w-7 h-6 sm:h-7 text-white"
+                  className="w-6 sm:w-7 h-6 sm:h-7 text-[#c9a24d]"
                 >
                   <path
                     strokeLinecap="round"

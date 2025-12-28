@@ -2,13 +2,31 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const images = [
-  "https://jerseywala.in/cdn/shop/files/466063605_1142584110906606_4958682630687692071_n.jpg?v=1733433700&width=400",
-  "https://jerseywala.in/cdn/shop/files/467378600_609455338167889_181525910962469965_n.jpg?v=1733433717&width=400",
-  "https://jerseywala.in/cdn/shop/files/467412609_8679422135459605_7687179873242300504_n.jpg?v=1733433735&width=400",
-  "https://jerseywala.in/cdn/shop/files/467401905_931231362253946_5971249444358728777_n.jpg?v=1733433774&width=400",
-  "https://jerseywala.in/cdn/shop/files/467403038_589688816843664_7389677793209991228_n.jpg?v=1733433800&width=400",
-  "https://jerseywala.in/cdn/shop/files/467441914_918158240253343_8939258952041094529_n.jpg?v=1733433855&width=400"
+const reviews = [
+  {
+    name: "Aarav S.",
+    text: "Absolutely loved the fabric quality. The fit is perfect and delivery was faster than expected."
+  },
+  {
+    name: "Ritika M.",
+    text: "The designing on this is premium. Definitely ordering again."
+  },
+  {
+    name: "Kunal P.",
+    text: "Worth every rupee. Looks exactly like the pictures and feels great to wear."
+  },
+  {
+    name: "Sneha R.",
+    text: "Packaging, quality, and support — everything was on point."
+  },
+  {
+    name: "Aditya V.",
+    text: "Best thing I’ve bought online so far. Highly recommended."
+  },
+  {
+    name: "Neha K.",
+    text: "Stylish, comfortable, and premium. Loved the blush aesthetic."
+  }
 ];
 
 export default function ReviewCarousel() {
@@ -22,9 +40,7 @@ export default function ReviewCarousel() {
     if (!el) return;
 
     setCanScrollLeft(el.scrollLeft > 0);
-    setCanScrollRight(
-      el.scrollLeft + el.clientWidth < el.scrollWidth - 5
-    );
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 5);
   };
 
   // scroll by one card
@@ -64,7 +80,7 @@ export default function ReviewCarousel() {
   }, []);
 
   return (
-    <section className="py-16 bg-black text-white">
+    <section className="py-16 text-[#1c1c1c]">
       <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-10">
         Customer Reviews
       </h2>
@@ -74,7 +90,7 @@ export default function ReviewCarousel() {
         {canScrollLeft && (
           <button
             onClick={() => scrollByOne("left")}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white text-black p-3 rounded-full shadow"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-[#f6d6de] text-[#c9a24d] p-3 rounded-full shadow-lg"
           >
             ‹
           </button>
@@ -84,7 +100,7 @@ export default function ReviewCarousel() {
         {canScrollRight && (
           <button
             onClick={() => scrollByOne("right")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white text-black p-3 rounded-full shadow"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-[#f6d6de] text-[#c9a24d] p-3 rounded-full shadow-lg"
           >
             ›
           </button>
@@ -95,18 +111,24 @@ export default function ReviewCarousel() {
           ref={containerRef}
           className="flex gap-6 overflow-x-auto px-6 lg:px-12 scrollbar-hide scroll-smooth"
         >
-          {images.map((src, idx) => (
+          {reviews.map((review, idx) => (
             <div
               key={idx}
               data-card
-              className="flex-shrink-0 w-[70%] sm:w-[38%] lg:w-[24%]"
+              className="flex-shrink-0 w-[75%] sm:w-[42%] lg:w-[26%]"
             >
-              <div className="rounded-2xl overflow-hidden border-4 border-gray-700 bg-gray-900">
-                <img
-                  src={src}
-                  alt={`Customer review ${idx + 1}`}
-                  className="w-full h-auto object-contain"
-                />
+              <div className="h-full rounded-2xl bg-[#f6d6de] p-6 shadow-lg flex flex-col justify-between">
+                
+                <p className="text-[#c9a24d] text-sm sm:text-base leading-relaxed mb-6">
+                  “{review.text}”
+                </p>
+
+                <div className="text-right">
+                  <span className="text-[#c9a24d] font-semibold text-sm">
+                    — {review.name}
+                  </span>
+                </div>
+
               </div>
             </div>
           ))}

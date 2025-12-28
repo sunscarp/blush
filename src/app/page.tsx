@@ -54,61 +54,27 @@ export default function Home() {
   }, {});
 
   // Show four main categories once
-  const categories = ["Football", "Basketball", "Anime", "Korean"];
+  const categories = ["Party Wear Dresses", "Short Dresses", "Stockings", "Leather Skirts"];
 
   return (
     <>
-      {/* Hero Stats Section */}
-      <section className="bg-black text-white py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h1 className="flex flex-col items-center mb-4 leading-tight">
-  <span className="ml-3 text-[25px] md:text-[27px] font-bold tracking-[0.7em] text-gray-300">
-    OTAKU
-  </span>
-
-  <span className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-    BALLERZ
-  </span>
-</h1>
+ {/* Hero Logo Section */}
+<section className="w-full flex justify-center items-center py-10 md:py-14">
+  <div className="px-8">
+    <img
+      src="/Blush logo.jpg"
+      alt="Blush Logo"
+      className="w-48 sm:w-56 md:w-64 lg:w-72 object-contain mx-auto mix-blend-multiply"
+    />
+  </div>
+</section>
 
 
 
-
-
-            <p className="text-xl md:text-2xl text-gray-300 font-light">
-              Premium Football Jerseys & Sportswear
-            </p>
-          </div>
-          
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-            <div className="bg-gray-900 rounded-xl p-6 hover:bg-gray-800 transition-colors">
-              <div className="text-3xl font-bold text-white mb-2 block md:hidden">150,000</div>
-              <div className="text-4xl font-bold text-white mb-2 hidden md:block">150k</div>
-              <div className="text-gray-400 text-sm md:text-base">Monthly Visitors</div>
-            </div>
-            
-            <div className="bg-gray-900 rounded-xl p-6 hover:bg-gray-800 transition-colors">
-              <div className="text-3xl md:text-4xl font-bold text-white mb-2">15,500</div>
-              <div className="text-gray-400 text-sm md:text-base">Jerseys Sold</div>
-            </div>
-            
-            <div className="bg-gray-900 rounded-xl p-6 hover:bg-gray-800 transition-colors">
-              <div className="text-3xl md:text-4xl font-bold text-white mb-2">12,842</div>
-              <div className="text-gray-400 text-sm md:text-base">Pre-Paid Orders</div>
-            </div>
-            
-            <div className="bg-gray-900 rounded-xl p-6 hover:bg-gray-800 transition-colors">
-              <div className="text-3xl md:text-4xl font-bold text-yellow-400 mb-2">4.9⭐</div>
-              <div className="text-gray-400 text-sm md:text-base">Happy Customers</div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Categories Panel (2x2 grid on mobile, 1x4 on desktop) */}
-      <section className="bg-black text-white px-6 md:px-10 pt-16">
+      <section className="text-black px-6 md:px-10 pt-16 rounded-xl">
+
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
             Browse By Category
@@ -116,11 +82,12 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {categories.map(cat => {
               const images: Record<string, string> = {
-                Football: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQs9bNOBl7Rg_JVso6TEMBOfXKhif96T-Nx-g&s",
-                Basketball: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMz08Lz-CrvgIkdQU86S0BaieNdYVYYcyOAQ&s",
-                Anime: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQee2MLiUi1Es3bqPSfv77Oemp-HMtdmHmww&s",
-                Korean: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRESLoeLwtGeddlrTVauX8dIUJI6Zw2PgUKjA&s"
-              };
+  "Party Wear Dresses": products.find(p => p.Product === "Party Wear Dresses")?.ImageUrl1 || "/placeholder.png",
+  "Short Dresses": products.find(p => p.Product === "Short Dresses")?.ImageUrl1 || "/placeholder.png",
+  "Stockings": products.find(p => p.Product === "Stockings")?.ImageUrl1 || "/placeholder.png",
+  "Leather Skirts": products.find(p => p.Product === "Leather Skirts")?.ImageUrl1 || "/placeholder.png",
+};
+
               const imgSrc = images[cat] || `https://picsum.photos/seed/${encodeURIComponent(cat)}/400/600`;
               return (
                 <Link
@@ -135,7 +102,7 @@ export default function Home() {
                       className="absolute inset-0 w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-base md:text-2xl lg:text-3xl font-bold text-white drop-shadow-lg uppercase tracking-wide text-center px-2">
+                      <span className="text-base md:text-2xl lg:text-3xl font-bold text-[#c9a24d] drop-shadow-lg uppercase tracking-wide text-center px-2">
                         {cat}
                       </span>
                     </div>
@@ -147,40 +114,94 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Top Picks Section */}
-      <section className="bg-black text-white px-6 md:px-10 pt-16">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
-            Our Top Picks
-          </h2>
-          <div className="overflow-hidden">
-            <div className="flex gap-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory lg:grid lg:grid-cols-3 lg:gap-8">
-              {products.slice(0, 6).map((p) => (
-                <Link
-                  key={p.ID}
-                  href={`/product/${encodeURIComponent(p.Description)}`}
-                  className="flex-none w-[280px] md:w-[calc(50%-12px)] lg:w-auto text-white flex flex-col items-center snap-center px-2"
-                >
-                  <div className="aspect-square border border-gray-600 rounded mb-3 overflow-hidden w-full max-w-xs">
-                    <img
-                      src={p.ImageUrl1}
-                      alt={p.Description}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="truncate text-white text-lg mb-1 w-full text-center">{p.Description}</div>
-                  <div className="mt-1 text-center">
-                    {p.OriginalPrice && (
-                      <span className="line-through text-gray-400 mr-2">₹{p.OriginalPrice}</span>
-                    )}
-                    <span className="text-yellow-400 font-semibold">₹{p.Price}</span>
-                  </div>
-                </Link>
-              ))}
+      {/* BEST SELLERS */}
+<section className="text-black px-6 md:px-10 pt-16">
+  <div className="max-w-7xl mx-auto">
+    <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+      Best Sellers
+    </h2>
+
+    <div className="overflow-hidden">
+      <div className="flex gap-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory lg:grid lg:grid-cols-3 lg:gap-8">
+        {products.slice(0, 6).map((p) => (
+          <Link
+            key={p.ID}
+            href={`/product/${encodeURIComponent(p.Description)}`}
+            className="flex-none w-[280px] md:w-[calc(50%-12px)] lg:w-auto flex flex-col items-center snap-center px-2"
+          >
+            <div className="aspect-square border border-gray-300 rounded-xl mb-3 overflow-hidden w-full max-w-xs bg-white">
+              <img
+                src={p.ImageUrl1}
+                alt={p.Description}
+                className="w-full h-full object-cover"
+              />
             </div>
-          </div>
-        </div>
-      </section>
+
+            <div className="truncate text-gray-900 font-semibold text-base md:text-lg mb-1 w-full text-center">
+              {p.Description}
+            </div>
+
+            <div className="mt-1 text-center">
+              {p.OriginalPrice && (
+                <span className="line-through text-gray-400 mr-2">
+                  ₹{p.OriginalPrice}
+                </span>
+              )}
+              <span className="text-[#d4af37] font-semibold">
+                ₹{p.Price}
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+{/* NEW ARRIVALS */}
+<section className="text-black px-6 md:px-10 pt-24">
+  <div className="max-w-7xl mx-auto">
+    <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+      New Arrivals
+    </h2>
+
+    <div className="overflow-hidden">
+      <div className="flex gap-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory lg:grid lg:grid-cols-3 lg:gap-8">
+        {products.slice(6, 9).map((p) => (
+          <Link
+            key={p.ID}
+            href={`/product/${encodeURIComponent(p.Description)}`}
+            className="flex-none w-[280px] md:w-[calc(50%-12px)] lg:w-auto flex flex-col items-center snap-center px-2"
+          >
+            <div className="aspect-square border border-gray-300 rounded-xl mb-3 overflow-hidden w-full max-w-xs bg-white">
+              <img
+                src={p.ImageUrl1}
+                alt={p.Description}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="truncate text-gray-900 font-semibold text-base md:text-lg mb-1 w-full text-center">
+              {p.Description}
+            </div>
+
+            <div className="mt-1 text-center">
+              {p.OriginalPrice && (
+                <span className="line-through text-gray-400 mr-2">
+                  ₹{p.OriginalPrice}
+                </span>
+              )}
+              <span className="text-[#d4af37] font-semibold">
+                ₹{p.Price}
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
 
       <ReviewCarousel />
 
