@@ -15,12 +15,7 @@ import { db } from "@/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { useAdmin } from "@/hooks/useAdmin";
 
-type OrderStatus =
-  | "placed"
-  | "confirmed"
-  | "shipped"
-  | "out for delivery"
-  | "completed";
+type OrderStatus = "placed" | "shipped" | "done";
 
 type OrderItem = {
   ID: number | string;
@@ -41,25 +36,25 @@ type Order = {
   id: string;
   createdAt: any;
   userEmail: string;
+  customer?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    pinCode?: string;
+    stateCity?: string;
+  };
   total: number;
   status: OrderStatus;
   items: OrderItem[];
 };
 
-const ORDER_STATUSES: OrderStatus[] = [
-  "placed",
-  "confirmed",
-  "shipped",
-  "out for delivery",
-  "completed",
-];
+const ORDER_STATUSES: OrderStatus[] = ["placed", "shipped", "done"];
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   placed: "bg-gray-100 text-gray-800",
-  confirmed: "bg-blue-100 text-blue-800",
   shipped: "bg-yellow-100 text-yellow-800",
-  "out for delivery": "bg-orange-100 text-orange-800",
-  completed: "bg-green-100 text-green-800",
+  done: "bg-green-100 text-green-800",
 };
 
 export default function OrderManagementPage() {
@@ -216,11 +211,34 @@ export default function OrderManagementPage() {
                       </span>
                     </div>
                     <p className="text-sm text-zinc-600">
-                      Customer: {order.userEmail}
-                    </p>
-                    <p className="text-sm text-zinc-600">
                       Ordered: {formatDate(order.createdAt)}
                     </p>
+                    {order.customer && (
+                      <div className="mt-1 text-xs text-zinc-600 space-y-0.5">
+                        <p className="font-semibold text-zinc-800">Customer</p>
+                        <p>
+                          {order.customer.name || ""}
+                          {order.customer.email || order.userEmail
+                            ? ` (${order.customer.email || order.userEmail})`
+                            : ""}
+                        </p>
+                        {order.customer.phone && (
+                          <p>Phone: {order.customer.phone}</p>
+                        )}
+                        {order.customer.address && (
+                          <p>Address: {order.customer.address}</p>
+                        )}
+                        {(order.customer.stateCity || order.customer.pinCode) && (
+                          <p>
+                            {(order.customer.stateCity || "").trim()}
+                            {order.customer.stateCity && order.customer.pinCode
+                              ? " - "
+                              : ""}
+                            {(order.customer.pinCode || "").trim()}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-col items-start lg:items-end gap-2">
@@ -248,56 +266,57 @@ export default function OrderManagementPage() {
                 <div className="border-t border-zinc-200 pt-4">
                   <h4 className="font-semibold mb-3">Items Ordered:</h4>
                   <div className="grid gap-3 md:gap-2">
-                    {order.items.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="flex flex-col md:flex-row md:justify-between md:items-center p-3 bg-zinc-50 rounded-lg gap-2"
-                      >
-                        <div className="flex items-center gap-3">
-                          {item.product?.ImageUrl1 && (
+                    {order.items.map((item, idx) => {
+                      const basePrice = item.product?.Price || 0;
+                      const customPrice = item.isCustomized && item.customPrice ? item.customPrice : 0;
+                      const totalPrice = basePrice + customPrice;
+                      const itemTotal = totalPrice * item.Quantity;
+
+                      const imgSrc = item.product?.ImageUrl1 || "/favicon.ico";
+
+                      return (
+                        <div
+                          key={idx}
+                          className="flex flex-col md:flex-row md:justify-between md:items-center p-3 bg-zinc-50 rounded-lg gap-2"
+                        >
+                          <div className="flex items-center gap-3">
                             <img
-                              src={item.product.ImageUrl1}
+                              src={imgSrc}
                               alt={item.product?.Description || "Product"}
                               className="w-12 h-12 object-cover rounded"
                             />
-                          )}
-                          <div>
-                            <p className="font-medium">
-                              {item.product?.Description || "Product"}
-                            </p>
-                            <p className="text-sm text-zinc-600">
-                              Size: {item.Size || "N/A"} | Quantity: {item.Quantity}
-                            </p>
-                            {item.isCustomized && (
-                              <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-200">
-                                <p className="text-sm font-medium text-blue-800">
-                                  Customized: "{item.customizationText}"
-                                </p>
-                                {item.customPrice && (
-                                  <p className="text-xs text-blue-600">
-                                    +{formatCurrency(item.customPrice)} customization fee
+                            <div>
+                              <p className="font-medium">
+                                {item.product?.Description || "Product"} × {item.Quantity}
+                              </p>
+                              <p className="text-xs text-zinc-500">
+                                ID: {item.ID} • Size: {item.Size || "N/A"}
+                              </p>
+                              {item.isCustomized && (
+                                <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-200">
+                                  <p className="text-sm font-medium text-blue-800">
+                                    Customized: "{item.customizationText}"
                                   </p>
-                                )}
-                              </div>
-                            )}
+                                  {item.customPrice && (
+                                    <p className="text-xs text-blue-600">
+                                      +{formatCurrency(item.customPrice)} customization fee
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </div>
+                          <p className="font-semibold">
+                            {formatCurrency(itemTotal)}
+                            {item.isCustomized && item.customPrice && (
+                              <span className="text-sm font-normal text-zinc-600">
+                                (Base: {formatCurrency(basePrice * item.Quantity)} + Custom: {formatCurrency((item.customPrice || 0) * item.Quantity)})
+                              </span>
+                            )}
+                          </p>
                         </div>
-                        <p className="font-semibold">
-                          {(() => {
-                            const basePrice = (item.product?.Price || 0);
-                            const customPrice = item.isCustomized && item.customPrice ? item.customPrice : 0;
-                            const totalPrice = basePrice + customPrice;
-                            const itemTotal = totalPrice * item.Quantity;
-                            return formatCurrency(itemTotal);
-                          })()} 
-                          {item.isCustomized && item.customPrice && (
-                            <span className="text-sm font-normal text-zinc-600">
-                              (Base: {formatCurrency((item.product?.Price || 0) * item.Quantity)} + Custom: {formatCurrency((item.customPrice || 0) * item.Quantity)})
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 

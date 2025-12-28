@@ -6,7 +6,6 @@ import {
   collection,
   query,
   where,
-  orderBy,
   onSnapshot,
   getDocs,
   updateDoc,
@@ -19,12 +18,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { generateInvoice } from "@/utils/generateInvoice";
 
-type OrderStatus =
-  | "placed"
-  | "confirmed"
-  | "shipped"
-  | "out for delivery"
-  | "completed";
+type OrderStatus = "placed" | "shipped" | "done";
 
 type OrderItem = {
   ID: number | string;
@@ -42,6 +36,15 @@ type OrderItem = {
 type Order = {
   id: string;
   createdAt: any;
+  userEmail: string;
+  customer?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    pinCode?: string;
+    stateCity?: string;
+  };
   total: number;
   status: OrderStatus;
   items: OrderItem[];
@@ -64,25 +67,51 @@ export default function OrdersPage() {
 
   /* 🔥 Fetch orders */
   useEffect(() => {
-    if (!user?.email) return;
+    // Wait for auth to finish
+    if (loading) return;
+
+    // If there is no signed-in user or no email, stop loading and show empty state
+    if (!user || !user.email) {
+      setOrders([]);
+      setFetching(false);
+      return;
+    }
+
+    if (!db) {
+      setFetching(false);
+      return;
+    }
 
     const q = query(
-      collection(db!, "Orders"),
-      where("userEmail", "==", user.email),
-      orderBy("createdAt", "desc")
+      collection(db, "Orders"),
+      where("userEmail", "==", user.email)
     );
 
-    const unsub = onSnapshot(q, (snap) => {
-      const rows: Order[] = snap.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as any),
-      }));
-      setOrders(rows);
-      setFetching(false);
-    });
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const rows: Order[] = snap.docs.map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as any),
+        }));
+
+        // Sort newest first using createdAt timestamp if available
+        rows.sort((a, b) => {
+          const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          return bTime - aTime;
+        });
+        setOrders(rows);
+        setFetching(false);
+      },
+      () => {
+        // On error, stop the loading spinner instead of hanging
+        setFetching(false);
+      }
+    );
 
     return () => unsub();
-  }, [user]);
+  }, [user, loading]);
 
   /* 🛒 Buy again */
   const handleBuyAgain = async (items: OrderItem[]) => {
@@ -148,6 +177,11 @@ export default function OrdersPage() {
         })
       : "";
 
+  // Extra safety: ensure we only render orders for the signed-in user's email
+  const visibleOrders = user?.email
+    ? orders.filter((o) => o.userEmail === user.email)
+    : orders;
+
   if (loading || fetching) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white font-semibold bg-black">
@@ -175,11 +209,11 @@ export default function OrdersPage() {
         </button>
       </div>
 
-      {orders.length === 0 ? (
+        {visibleOrders.length === 0 ? (
         <p className="text-gray-300">You have no orders yet.</p>
       ) : (
         <div className="space-y-6">
-          {orders.map((order) => {
+            {visibleOrders.map((order) => {
             /* ===== DISCOUNT LOGIC (ADDED) ===== */
             const normalTotal = order.items.reduce((sum, item) => {
               const base = item.product?.Price ?? 0;
@@ -215,6 +249,28 @@ export default function OrdersPage() {
                   </span>
                 </div>
 
+                {/* Customer Details */}
+                {order.customer && (
+                  <div className="mt-3 text-sm text-gray-300 space-y-1">
+                    <p className="font-semibold text-white">Customer</p>
+                    <p>
+                      {order.customer.name || ""}
+                      {order.customer.email || order.userEmail
+                        ? ` (${order.customer.email || order.userEmail})`
+                        : ""}
+                    </p>
+                    {order.customer.phone && <p>Phone: {order.customer.phone}</p>}
+                    {order.customer.address && <p>Address: {order.customer.address}</p>}
+                    {(order.customer.stateCity || order.customer.pinCode) && (
+                      <p>
+                        {(order.customer.stateCity || "").trim()}
+                        {order.customer.stateCity && order.customer.pinCode ? " - " : ""}
+                        {(order.customer.pinCode || "").trim()}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* Items */}
                 <div className="space-y-2">
                   {order.items.map((item, idx) => {
@@ -222,14 +278,28 @@ export default function OrdersPage() {
                     const custom = item.isCustomized ? item.customPrice ?? 0 : 0;
                     const total = (base + custom) * item.Quantity;
 
+                    const imgSrc =
+                      (item as any).product?.ImageUrl1 || "/favicon.ico";
+
                     return (
                       <div key={idx} className="space-y-1">
-                        <div className="flex justify-between text-sm gap-4">
-                          <span className="flex-1">
-                            {item.product?.Description ?? "Product"} ×{" "}
-                            {item.Quantity}
-                          </span>
-                          <span className="whitespace-nowrap">
+                        <div className="flex items-center justify-between gap-4 text-sm">
+                          <div className="flex items-center gap-3 flex-1">
+                            <img
+                              src={imgSrc}
+                              alt={item.product?.Description || "Product"}
+                              className="w-12 h-12 rounded object-cover bg-gray-900 border border-gray-700"
+                            />
+                            <div>
+                              <p className="font-medium">
+                                {item.product?.Description ?? "Product"} × {item.Quantity}
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                ID: {item.ID} • Size: {item.Size || "N/A"}
+                              </p>
+                            </div>
+                          </div>
+                          <span className="whitespace-nowrap font-semibold">
                             Rs. {total}
                           </span>
                         </div>

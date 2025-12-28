@@ -38,10 +38,16 @@ type InventoryItem = {
   ID: number | string;
   Description?: string;
   Product?: string;
+  ProductName?: string;
   ImageUrl1?: string;
   ImageUrl2?: string;
   ImageUrl3?: string;
   Price?: number | string;
+   Stock?: number;
+   StockS?: number;
+   StockM?: number;
+   StockL?: number;
+   StockXL?: number;
   _docId?: string;
 };
 
@@ -211,7 +217,27 @@ export default function CartPage() {
   }
 
   async function changeQuantity(item: CartItem, delta: number) {
-    const newQty = Math.max(0, Number(item.Quantity || 0) + delta);
+    const currentQty = Number(item.Quantity || 0);
+    const newQty = Math.max(0, currentQty + delta);
+
+    // If increasing, enforce stock limits based on selected size
+    if (delta > 0) {
+      const prod = inventoryMap[String(item.ID)];
+      if (prod) {
+        let sizeStock: number | undefined;
+        const size = (item.Size || "").toUpperCase();
+        if (size === "S") sizeStock = prod.StockS;
+        else if (size === "M") sizeStock = prod.StockM;
+        else if (size === "L") sizeStock = prod.StockL;
+        else if (size === "XL") sizeStock = prod.StockXL;
+
+        const maxAllowed = sizeStock ?? prod.Stock;
+        if (typeof maxAllowed === "number" && newQty > maxAllowed) {
+          alert("No more stock available for this size.");
+          return;
+        }
+      }
+    }
 
     if (user && user.email && item.docId && db) {
       try {
@@ -325,7 +351,7 @@ export default function CartPage() {
                         >
                           <Image
                             src={img}
-                            alt={prod?.Product ?? `item-${key}`}
+                            alt={prod?.Description ?? ""}
                             fill
                             className="object-contain"
                             unoptimized
@@ -337,7 +363,7 @@ export default function CartPage() {
                         <div className="flex items-start justify-between gap-3">
                           <div className="space-y-1">
                             <p className="text-sm font-medium text-gray-900 leading-snug">
-                              {prod?.Product || "Item"}
+                              {prod?.Description ?? ""}
                             </p>
                             {it.Size && (
                               <p className="text-[11px] text-gray-500">
@@ -375,13 +401,38 @@ export default function CartPage() {
                             <span className="px-3 py-1 text-gray-900 text-sm min-w-[32px] text-center">
                               {it.Quantity}
                             </span>
-                            <button
-                              type="button"
-                              onClick={() => changeQuantity(it, +1)}
-                              className="px-3 py-1 bg-white hover:bg-gray-50 text-gray-800"
-                            >
-                              +
-                            </button>
+                            {(() => {
+                              const prodForLine = inventoryMap[String(it.ID)];
+                              let sizeStock: number | undefined;
+                              const size = (it.Size || "").toUpperCase();
+                              if (size === "S") sizeStock = prodForLine?.StockS;
+                              else if (size === "M") sizeStock = prodForLine?.StockM;
+                              else if (size === "L") sizeStock = prodForLine?.StockL;
+                              else if (size === "XL") sizeStock = prodForLine?.StockXL;
+
+                              const maxAllowed =
+                                (typeof sizeStock === "number" ? sizeStock : undefined) ??
+                                (typeof prodForLine?.Stock === "number" ? prodForLine.Stock : undefined);
+                              const atMax =
+                                typeof maxAllowed === "number" &&
+                                Number(it.Quantity || 0) >= maxAllowed;
+
+                              return (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (atMax) return;
+                                    changeQuantity(it, +1);
+                                  }}
+                                  disabled={atMax}
+                                  className={`px-3 py-1 bg-white text-gray-800 ${
+                                    atMax ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-50"
+                                  }`}
+                                >
+                                  +
+                                </button>
+                              );
+                            })()}
                           </div>
                         </div>
                       </div>

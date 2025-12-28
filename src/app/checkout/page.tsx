@@ -1,6 +1,6 @@
 
 "use client";
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useRef, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
@@ -15,6 +15,7 @@ import {
   getDocs,
   deleteDoc,
   doc as firestoreDoc,
+  updateDoc,
 } from "firebase/firestore";
 
 // Types
@@ -36,6 +37,7 @@ type CustomerDetails = {
   phone: string;
   address: string;
   pinCode: string;
+  stateCity: string;
 };
 
 type OrderStatus = "checkout" | "processing" | "success" | "failed";
@@ -76,6 +78,7 @@ function CheckoutContent() {
     phone: "",
     address: "",
     pinCode: "",
+    stateCity: "",
   });
   const [orderDetails, setOrderDetails] = useState<any>(null);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
@@ -86,6 +89,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const buyNowParam = searchParams.get("buyNow");
   const [isBuyNow, setIsBuyNow] = useState(false);
+  const emailInitializedRef = useRef(false);
   useEffect(() => {
   if(loading) return;
     const raw = sessionStorage.getItem("postAuthAction");
@@ -106,10 +110,11 @@ function CheckoutContent() {
 
   // Auto-fill email when user is available
   useEffect(() => {
-    if (user?.email && !customerDetails.email) {
+    if (user?.email && !emailInitializedRef.current) {
       setCustomerDetails(prev => ({ ...prev, email: user.email || "" }));
+      emailInitializedRef.current = true;
     }
-  }, [user, customerDetails.email]);
+  }, [user]);
 
   // Load Razorpay script
   useEffect(() => {
@@ -271,6 +276,8 @@ if (storedBuyNow) {
            customerDetails.email.trim() && 
            customerDetails.phone.trim() && 
            customerDetails.address.trim() &&
+           customerDetails.pinCode.trim() &&
+           customerDetails.stateCity.trim() &&
            items.length > 0;
   };
 
@@ -282,6 +289,12 @@ if (storedBuyNow) {
 
     if (!isFormValid()) {
       alert("Please fill all required fields.");
+      return;
+    }
+
+    const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    if (!razorpayKeyId) {
+      alert("Payment setup issue: Razorpay key is not configured. Please contact support.");
       return;
     }
 
@@ -299,6 +312,7 @@ if (storedBuyNow) {
           customPrice: item.customPrice || 0
         })
       })),
+      // Store the typed checkout email under customer
       customer: customerDetails,
       total: discountedTotal,
       discountCode: discountCodeStatus === "valid" ? discountCode : "",
@@ -306,11 +320,12 @@ if (storedBuyNow) {
       discountAmount: discountCodeStatus === "valid" ? discountAmount : 0,
       createdAt: new Date().toISOString(),
       userId: user?.uid || null,
-      userEmail: user?.email || customerDetails.email,
+      // Always store the signed-in user's email under userEmail
+      userEmail: user?.email || null,
     };
 
     const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Your Razorpay Key ID
+      key: razorpayKeyId, // Your Razorpay Key ID
       amount: discountedTotal * 100, // Amount in paise (multiply by 100)
       currency: "INR",
       name: "Ballerz",
@@ -321,7 +336,7 @@ if (storedBuyNow) {
           const finalOrderData = {
             ...orderData,
             paymentId: response.razorpay_payment_id,
-            status: "completed",
+            status: "placed",
             createdAt: serverTimestamp(),
           };
 
@@ -329,7 +344,48 @@ if (storedBuyNow) {
           setOrderDetails({ ...finalOrderData, orderId: orderRef.id });
           setOrderStatus("success");
 
-          // (Invoice email sending removed — handled manually)
+          // Decrease stock for each ordered item based on size
+          try {
+            const sizeFieldMap: Record<string, string> = {
+              S: "StockS",
+              M: "StockM",
+              L: "StockL",
+              XL: "StockXL",
+            };
+
+            await Promise.all(
+              items.map(async (item) => {
+                const prod: any = inventoryMap[String(item.ID)];
+                if (!prod?._docId) return;
+
+                const qty = Number(item.Quantity || 0);
+                if (!qty || qty <= 0) return;
+
+                const updates: Record<string, number> = {};
+
+                // Decrement size-specific stock
+                if (item.Size) {
+                  const sizeKey = sizeFieldMap[String(item.Size).toUpperCase()];
+                  if (sizeKey && typeof prod[sizeKey] === "number") {
+                    const current = Number(prod[sizeKey] || 0);
+                    updates[sizeKey] = Math.max(0, current - qty);
+                  }
+                }
+
+                // Decrement overall stock if present
+                if (typeof prod.Stock === "number") {
+                  const currentTotal = Number(prod.Stock || 0);
+                  updates.Stock = Math.max(0, currentTotal - qty);
+                }
+
+                if (Object.keys(updates).length === 0) return;
+
+                await updateDoc(firestoreDoc(db!, "inventory", prod._docId), updates);
+              })
+            );
+          } catch (stockErr) {
+            console.error("Failed to update inventory stock after order:", stockErr);
+          }
 
           // Clear cart after successful order only when this was a regular cart checkout.
           // For buy-now single-item purchases we do not clear the user's cart.
@@ -391,6 +447,12 @@ if (storedBuyNow) {
     };
 
     try {
+      if (!window.Razorpay) {
+        console.error("Razorpay script not loaded or window.Razorpay is undefined");
+        alert("Payment system failed to load. Please refresh the page and try again.");
+        setOrderStatus("failed");
+        return;
+      }
       const rzp = new window.Razorpay(options);
       rzp.on('payment.failed', function (response: any) {
         console.error('Payment failed:', response);
@@ -420,45 +482,56 @@ if (storedBuyNow) {
   if (orderStatus === "success") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white px-4">
-        <div className="bg-white border border-gray-200 p-8 lg:p-12 rounded-2xl shadow text-center max-w-md w-full">
-          <div className="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-            </svg>
+        <div className="bg-white border border-gray-200 p-8 lg:p-10 rounded-2xl shadow max-w-md w-full text-center space-y-6">
+          <h1 className="text-2xl lg:text-3xl font-bold text-black">Order Confirmed</h1>
+
+          <div className="flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full border border-gray-300 flex items-center justify-center">
+              <svg
+                className="w-9 h-9 text-gray-800"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
           </div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-black mb-4">Order Confirmed</h1>
-          <p className="text-gray-600 mb-4 text-sm lg:text-base">
-            Thank you for your purchase. Your order has been successfully placed.
+
+          <div className="space-y-1">
+            <p className="text-sm text-gray-700">
+              Thank you! Your order has been placed
+            </p>
+            <p className="text-base font-semibold text-black">
+              Order #{orderDetails?.orderId}
+            </p>
+          </div>
+
+          <p className="text-sm text-gray-500 border-t border-b border-gray-200 py-4">
+            We&apos;ll send a confirmation to your email soon.
           </p>
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <p className="text-gray-600 text-sm mb-1">Order ID</p>
-            <p className="font-mono text-black text-lg font-semibold">{orderDetails?.orderId}</p>
+
+          <div className="space-y-3">
+            <p className="text-sm text-gray-700">Need help? Chat with us on WhatsApp</p>
+            <div className="mx-auto max-w-xs flex items-center gap-3 border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-800 bg-gray-50">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white text-xs font-bold">
+                W
+              </span>
+              <span className="truncate text-left">+91XXXXXXXXXX</span>
+            </div>
           </div>
-          <div className="bg-gray-50 rounded-lg p-4 mb-8">
-            <p className="text-gray-600 text-sm mb-1">Total Amount</p>
-            {orderDetails?.discountAmount > 0 ? (
-              <div>
-                <span className="line-through text-gray-400 mr-2">{formatCurrency((orderDetails?.total || 0) + (orderDetails?.discountAmount || 0))}</span>
-                <span className="text-green-400 text-2xl font-bold">{formatCurrency(orderDetails?.total || 0)}</span>
-              </div>
-            ) : (
-              <p className="text-white text-2xl font-bold">{formatCurrency(orderDetails?.total || 0)}</p>
-            )}
-          </div>
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => router.push("/")}
-              className="bg-white text-black px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-all duration-200 transform hover:scale-105"
-            >
-              Continue Shopping
-            </button>
-            <button
-              onClick={() => router.push("/orders")}
-              className="bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all duration-200 transform hover:scale-105"
-            >
-              View Orders
-            </button>
-          </div>
+
+          <button
+            onClick={() => router.push("/")}
+            className="mt-4 w-full bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-900 transition-colors"
+          >
+            Continue Shopping
+          </button>
         </div>
       </div>
     );
@@ -615,13 +688,13 @@ if (storedBuyNow) {
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
                   State / City
                 </label>
-                <select className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-700">
-                  <option value="">Select</option>
-                  <option value="mumbai">Mumbai</option>
-                  <option value="delhi">Delhi</option>
-                  <option value="bangalore">Bengaluru</option>
-                  <option value="other">Other</option>
-                </select>
+                <input
+                  type="text"
+                  value={customerDetails.stateCity}
+                  onChange={(e) => handleInputChange("stateCity", e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm placeholder-gray-400"
+                  placeholder="State / City"
+                />
               </div>
             </div>
           </div>
@@ -648,7 +721,7 @@ if (storedBuyNow) {
                   >
                     <div className="flex-1">
                       <p className="text-sm text-gray-900">
-                        • {prod?.Product ?? `Item ${key}`} {item.Quantity > 1 ? `× ${item.Quantity}` : ""}
+                        • {prod?.Description ?? ""} {item.Quantity > 1 ? `× ${item.Quantity}` : ""}
                       </p>
                       {item.Size && (
                         <p className="text-xs text-gray-500">Size: {item.Size}</p>
@@ -719,3 +792,8 @@ export default function CheckoutPage() {
     </Suspense>
   );
 }
+
+
+
+
+
