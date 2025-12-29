@@ -140,7 +140,7 @@ export default function OrderManagementPage() {
 
   if (authLoading || adminLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-bold">
+      <div className="min-h-screen flex items-center justify-center font-semibold text-black">
         Loading...
       </div>
     );
@@ -152,20 +152,20 @@ export default function OrderManagementPage() {
 
   if (fetching) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-bold">
+      <div className="min-h-screen flex items-center justify-center font-semibold text-black">
         Loading orders...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen px-6 py-10 bg-gradient-to-b from-zinc-50 to-white dark:from-black dark:to-zinc-900">
-      <main className="mx-auto w-full max-w-7xl">
+    <div className="px-4 py-10 md:px-10 md:py-14 text-black flex justify-center">
+      <main className="w-full max-w-5xl">
         <header className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h1 className="text-3xl font-extrabold">Order Management</h1>
-              <p className="text-sm text-zinc-500 mt-1">
+              <h1 className="text-2xl sm:text-3xl font-semibold">Order Management</h1>
+              <p className="text-sm text-gray-600 mt-1">
                 Manage all customer orders and update their status.
               </p>
             </div>
@@ -186,14 +186,14 @@ export default function OrderManagementPage() {
 
         {orders.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-lg font-medium text-zinc-500">No orders found.</p>
+            <p className="text-lg font-medium text-gray-600">No orders found.</p>
           </div>
         ) : (
           <div className="space-y-6">
             {orders.map((order) => (
               <div
                 key={order.id}
-                className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm"
+                className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm"
               >
                 {/* Order Header */}
                 <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-4">
@@ -210,12 +210,12 @@ export default function OrderManagementPage() {
                         {order.status}
                       </span>
                     </div>
-                    <p className="text-sm text-zinc-600">
+                    <p className="text-sm text-gray-600">
                       Ordered: {formatDate(order.createdAt)}
                     </p>
                     {order.customer && (
-                      <div className="mt-1 text-xs text-zinc-600 space-y-0.5">
-                        <p className="font-semibold text-zinc-800">Customer</p>
+                      <div className="mt-1 text-xs text-gray-600 space-y-0.5">
+                        <p className="font-semibold text-black">Customer</p>
                         <p>
                           {order.customer.name || ""}
                           {order.customer.email || order.userEmail
@@ -251,7 +251,7 @@ export default function OrderManagementPage() {
                         handleStatusUpdate(order.id, e.target.value as OrderStatus)
                       }
                       disabled={updatingOrderId === order.id}
-                      className="px-3 py-1 border border-zinc-300 rounded-md text-sm font-medium bg-white hover:bg-zinc-50 transition-colors disabled:opacity-50"
+                      className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium bg-white hover:bg-gray-50 transition-colors disabled:opacity-50"
                     >
                       {ORDER_STATUSES.map((status) => (
                         <option key={status} value={status}>
@@ -263,7 +263,7 @@ export default function OrderManagementPage() {
                 </div>
 
                 {/* Order Items */}
-                <div className="border-t border-zinc-200 pt-4">
+                <div className="border-t border-gray-200 pt-4">
                   <h4 className="font-semibold mb-3">Items Ordered:</h4>
                   <div className="grid gap-3 md:gap-2">
                     {order.items.map((item, idx) => {
@@ -277,7 +277,7 @@ export default function OrderManagementPage() {
                       return (
                         <div
                           key={idx}
-                          className="flex flex-col md:flex-row md:justify-between md:items-center p-3 bg-zinc-50 rounded-lg gap-2"
+                          className="flex flex-col md:flex-row md:justify-between md:items-center p-3 bg-gray-50 rounded-lg gap-2"
                         >
                           <div className="flex items-center gap-3">
                             <img
@@ -289,7 +289,7 @@ export default function OrderManagementPage() {
                               <p className="font-medium">
                                 {item.product?.Description || "Product"} × {item.Quantity}
                               </p>
-                              <p className="text-xs text-zinc-500">
+                              <p className="text-xs text-gray-500">
                                 ID: {item.ID} • Size: {item.Size || "N/A"}
                               </p>
                               {item.isCustomized && (

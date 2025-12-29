@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   collection,
@@ -211,7 +213,25 @@ export default function OrdersPage() {
       </div>
 
         {visibleOrders.length === 0 ? (
-        <p className="text-gray-700">You have no orders yet.</p>
+        <div className="mt-6 text-center flex flex-col items-center justify-center min-h-[60vh]">
+          <Image
+            src="/supermarket-shopping-cart-concept-illustration_114360-22408.avif"
+            alt="Supermarket shopping cart illustration"
+            width={260}
+            height={260}
+            className="mx-auto mb-6 object-contain"
+            priority
+          />
+          <p className="text-sm text-gray-700 mb-4 max-w-xs">
+            You have no orders yet. Start shopping to place your first order.
+          </p>
+          <Link
+            href="/shop"
+            className="inline-flex items-center justify-center bg-black text-white px-5 py-2.5 rounded-md text-sm font-semibold hover:opacity-90"
+          >
+            Continue Shopping
+          </Link>
+        </div>
       ) : (
         <div className="space-y-6">
             {visibleOrders.map((order) => {
