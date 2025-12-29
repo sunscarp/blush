@@ -18,9 +18,9 @@ export const metadata: Metadata = {
   title: "Blush Pune",
   description: "Blush - Find your inner Diva",
   icons: {
-    icon: '/Blush%20logo.jpg',
-    shortcut: '/Blush%20logo.jpg',
-    apple: '/Blush%20logo.jpg',
+    icon: '/favicon.jpg',
+    shortcut: '/favicon.jpg',
+    apple: '/favicon.jpg',
   },
 };
 
