@@ -66,18 +66,17 @@ export default function FAQPage() {
             <div className="bg-[#fff0f6] border-2 border-pink-100 rounded-lg p-6 sm:col-span-1 shadow-sm">
               <h2 className="text-xl font-semibold text-black mb-4">Get in Touch</h2>
               <div className="space-y-3 text-black">
-                
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5">📞</div>
-                  <span className="font-medium">+1 (555) 123-4567</span>
+                  <span className="font-medium">+91 8087847122</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5">✉️</div>
-                  <span className="font-medium">support@blushfashion.com</span>
+                  <span className="font-medium">prachikamble.blush@gmail.com</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5">🕒</div>
-                  <span className="font-medium">Mon-Fri: 9AM-6PM EST</span>
+                  <span className="font-medium">9:30 AM – 7:30 PM IST</span>
                 </div>
               </div>
             </div>
