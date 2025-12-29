@@ -282,12 +282,12 @@ export default function OrderManagementPage() {
                           <div className="flex items-center gap-3">
                             <img
                               src={imgSrc}
-                              alt={item.product?.Description || "Product"}
+                              alt={item.product?.ProductName || item.product?.Description || "Product"}
                               className="w-12 h-12 object-cover rounded"
                             />
                             <div>
                               <p className="font-medium">
-                                {item.product?.Description || "Product"} × {item.Quantity}
+                                {item.product?.ProductName || item.product?.Description || "Product"} × {item.Quantity}
                               </p>
                               <p className="text-xs text-gray-500">
                                 ID: {item.ID} • Size: {item.Size || "N/A"}

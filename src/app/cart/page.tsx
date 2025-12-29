@@ -434,7 +434,7 @@ export default function CartPage() {
                         >
                           <Image
                             src={img}
-                            alt={prod?.Description ?? ""}
+                            alt={prod?.ProductName ?? prod?.Description ?? ""}
                             fill
                             className="object-contain"
                             unoptimized
@@ -446,7 +446,7 @@ export default function CartPage() {
                         <div className="flex items-start justify-between gap-3">
                           <div className="space-y-1">
                             <p className="text-sm font-medium text-gray-900 leading-snug">
-                              {prod?.Description ?? ""}
+                              {prod?.ProductName ?? prod?.Description ?? ""}
                             </p>
                             {it.Size && (
                               <p className="text-[11px] text-gray-500">
