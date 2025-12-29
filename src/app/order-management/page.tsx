@@ -27,6 +27,7 @@ type OrderItem = {
   product?: {
     Description?: string;
     Product?: string;
+    ProductName?: string;
     Price?: number;
     ImageUrl1?: string;
   };
