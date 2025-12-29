@@ -31,6 +31,8 @@ type OrderItem = {
   customPrice?: number;
   product?: {
     Description?: string;
+    ProductName?: string;
+    ImageUrl1?: string;
     Price?: number;
   };
 };
