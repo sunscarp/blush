@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
@@ -12,6 +12,18 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const handlePostAuthRedirect = () => {
+    const raw = sessionStorage.getItem("postAuthAction");
+
+    if (!raw) {
+      router.replace("/");
+      return;
+    }
+
+    const action = JSON.parse(raw);
+    router.replace(action.redirectTo || "/");
+  };
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,23 +57,8 @@ export default function SignInPage() {
     }
   };
 
-  const handlePostAuthRedirect = () => {
-  const raw = sessionStorage.getItem("postAuthAction");
-
-  if (!raw) {
-    router.replace("/");
-    return;
-  }
-
-  const action = JSON.parse(raw);
-  
-
-  router.replace(action.redirectTo || "/");
-};
-
-
   return (
-    <div className="flex items-center justify-center bg-white px-4 font-light text-black py-8">
+    <div className="px-4 py-10 md:py-14 font-light text-black flex justify-center">
       <div className="max-w-md w-full space-y-6 bg-white border border-gray-200 p-6 md:p-8 rounded-xl shadow-lg">
         <div>
           <h2 className="text-center text-3xl md:text-4xl font-semibold">Sign In</h2>

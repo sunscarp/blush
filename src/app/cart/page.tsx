@@ -344,12 +344,16 @@ export default function CartPage() {
   }
 
   if (loading || loadingItems) {
-    return <div className="p-6">Loading cart…</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center font-semibold text-black">
+        Loading cart…
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-white text-black">
-      <div className="max-w-md mx-auto px-4 py-6">
+    <div className="px-4 py-10 md:px-10 md:py-14 text-black flex justify-center">
+      <div className="w-full max-w-md bg-white/90 border border-gray-200 rounded-xl shadow-sm px-4 py-6">
         <header className="border-b pb-3 mb-4 flex items-center justify-between">
           <h1 className="text-xl font-semibold">Cart</h1>
           <span className="text-xs text-gray-500">
@@ -358,8 +362,16 @@ export default function CartPage() {
         </header>
 
         {items.length === 0 ? (
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-700 mb-4">
+          <div className="mt-6 text-center flex flex-col items-center justify-center min-h-[60vh]">
+            <Image
+              src="/supermarket-shopping-cart-concept-illustration_114360-22408.avif"
+              alt="Supermarket shopping cart illustration"
+              width={260}
+              height={260}
+              className="mx-auto mb-6 object-contain"
+              priority
+            />
+            <p className="text-sm text-gray-700 mb-4 max-w-xs">
               Your cart is empty. Start adding beautiful pieces to your bag.
             </p>
             <Link

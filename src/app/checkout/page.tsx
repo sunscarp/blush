@@ -501,8 +501,8 @@ if (storedBuyNow) {
 
   if (loading || loadingItems) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen flex items-center justify-center text-black px-4">
+        <div className="text-center bg-white/90 border border-gray-200 rounded-2xl shadow px-6 py-8 max-w-md w-full">
           <div className="relative">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-gray-500 mx-auto mb-4"></div>
           </div>
@@ -515,8 +515,8 @@ if (storedBuyNow) {
 
   if (orderStatus === "success") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white px-4">
-        <div className="bg-white border border-gray-200 p-8 lg:p-10 rounded-2xl shadow max-w-md w-full text-center space-y-6">
+      <div className="px-4 py-10 md:px-10 md:py-14 flex justify-center text-black">
+        <div className="bg-white/90 border border-gray-200 p-8 lg:p-10 rounded-2xl shadow max-w-md w-full text-center space-y-6">
           <h1 className="text-2xl lg:text-3xl font-bold text-black">Order Confirmed</h1>
 
           <div className="flex items-center justify-center">
@@ -573,27 +573,27 @@ if (storedBuyNow) {
 
   if (orderStatus === "failed") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black px-4">
-        <div className="bg-gray-900 border border-gray-700 p-8 lg:p-12 rounded-2xl shadow-2xl text-center max-w-md w-full">
-          <div className="bg-red-500/20 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="px-4 py-10 md:px-10 md:py-14 flex justify-center text-black">
+        <div className="bg-white/90 border border-gray-200 p-8 lg:p-12 rounded-2xl shadow text-center max-w-md w-full">
+          <div className="bg-red-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+            <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-white mb-4">Payment Failed</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-black mb-4">Payment Failed</h1>
           <p className="text-gray-600 mb-8 text-sm lg:text-base">
             Your payment could not be processed. Please try again or contact support for assistance.
           </p>
           <div className="flex flex-col gap-3">
             <button
               onClick={() => setOrderStatus("checkout")}
-              className="bg-white text-black px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-all duration-200 transform hover:scale-105"
+              className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-900 transition-all duration-200 transform hover:scale-105"
             >
               Try Again
             </button>
             <button
               onClick={() => router.push("/")}
-              className="bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all duration-200 transform hover:scale-105"
+              className="bg-gray-200 text-black px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-200 transform hover:scale-105"
             >
               Return Home
             </button>
@@ -605,8 +605,8 @@ if (storedBuyNow) {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white px-4">
-        <div className="text-center">
+      <div className="px-4 py-10 md:px-10 md:py-14 flex justify-center text-black">
+        <div className="text-center bg-white/90 border border-gray-200 rounded-2xl shadow px-8 py-10 max-w-md w-full">
           <div className="bg-gray-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
             <svg className="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -618,7 +618,7 @@ if (storedBuyNow) {
           </p>
           <button
             onClick={() => router.push("/")}
-            className="bg-black text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-all duration-200 transform hover:scale-105"
+            className="bg-black text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-900 transition-all duration-200 transform hover:scale-105"
           >
             Start Shopping
           </button>
@@ -628,8 +628,8 @@ if (storedBuyNow) {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black">
-      <div className="max-w-md mx-auto px-4 py-6">
+    <div className="px-4 py-10 md:px-10 md:py-14 text-black flex justify-center">
+      <div className="w-full max-w-md bg-white/90 border border-gray-200 rounded-xl shadow-sm px-4 py-6">
         {/* Header */}
         <header className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Checkout</h1>
@@ -821,7 +821,7 @@ if (storedBuyNow) {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-100 flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-black">Loading...</div>}>
       <CheckoutContent />
     </Suspense>
   );

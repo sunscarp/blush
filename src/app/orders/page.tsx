@@ -184,14 +184,15 @@ export default function OrdersPage() {
 
   if (loading || fetching) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white font-semibold bg-black">
+      <div className="min-h-screen flex items-center justify-center font-semibold text-black">
         Loading orders...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white px-4 sm:px-8 lg:px-12 py-6 sm:py-10">
+    <div className="px-4 py-10 md:px-10 md:py-14 text-black flex justify-center">
+      <div className="w-full max-w-5xl">
       {/* Header */}
       <div className="mb-8 space-y-3">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
@@ -203,14 +204,14 @@ export default function OrdersPage() {
 
         <button
           onClick={() => router.back()}
-          className="font-medium hover:underline text-gray-300 w-fit"
+          className="font-medium hover:underline text-gray-700 w-fit"
         >
           ← Back
         </button>
       </div>
 
         {visibleOrders.length === 0 ? (
-        <p className="text-gray-300">You have no orders yet.</p>
+        <p className="text-gray-700">You have no orders yet.</p>
       ) : (
         <div className="space-y-6">
             {visibleOrders.map((order) => {
@@ -230,7 +231,7 @@ export default function OrdersPage() {
             return (
               <div
                 key={order.id}
-                className="border border-gray-600 rounded-xl p-4 sm:p-6 space-y-4"
+                className="border border-gray-300 bg-white/90 rounded-xl p-4 sm:p-6 space-y-4 shadow-sm"
               >
                 {/* Meta */}
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
@@ -239,20 +240,20 @@ export default function OrdersPage() {
                       Order ID:{" "}
                       <span className="font-mono">{order.id}</span>
                     </p>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-gray-500">
                       {formatDate(order.createdAt)}
                     </p>
                   </div>
 
-                  <span className="px-4 py-1 rounded-full border border-gray-500 font-medium capitalize w-fit">
+                  <span className="px-4 py-1 rounded-full border border-gray-300 bg-gray-50 font-medium capitalize w-fit">
                     {order.status}
                   </span>
                 </div>
 
                 {/* Customer Details */}
                 {order.customer && (
-                  <div className="mt-3 text-sm text-gray-300 space-y-1">
-                    <p className="font-semibold text-white">Customer</p>
+                  <div className="mt-3 text-sm text-gray-700 space-y-1">
+                    <p className="font-semibold text-black">Customer</p>
                     <p>
                       {order.customer.name || ""}
                       {order.customer.email || order.userEmail
@@ -288,13 +289,13 @@ export default function OrdersPage() {
                             <img
                               src={imgSrc}
                               alt={item.product?.Description || "Product"}
-                              className="w-12 h-12 rounded object-cover bg-gray-900 border border-gray-700"
+                              className="w-12 h-12 rounded object-cover bg-gray-100 border border-gray-300"
                             />
                             <div>
                               <p className="font-medium">
                                 {item.product?.Description ?? "Product"} × {item.Quantity}
                               </p>
-                              <p className="text-xs text-gray-400">
+                              <p className="text-xs text-gray-500">
                                 ID: {item.ID} • Size: {item.Size || "N/A"}
                               </p>
                             </div>
@@ -305,12 +306,12 @@ export default function OrdersPage() {
                         </div>
 
                         {item.isCustomized && (
-                          <div className="ml-3 p-2 bg-gray-900 border border-gray-700 rounded">
-                            <p className="text-xs text-blue-400">
+                          <div className="ml-3 p-2 bg-gray-50 border border-gray-200 rounded">
+                            <p className="text-xs text-blue-700">
                               Customized: "{item.customizationText}"
                             </p>
                             {custom > 0 && (
-                              <p className="text-xs text-blue-300">
+                              <p className="text-xs text-blue-600">
                                 +Rs. {custom} customization fee
                               </p>
                             )}
@@ -324,7 +325,7 @@ export default function OrdersPage() {
                 {/* ===== TOTAL + DISCOUNT (ADDED) ===== */}
                 <div className="space-y-1">
                   {discountAmount > 0 && (
-                    <div className="flex justify-between text-sm text-green-400">
+                    <div className="flex justify-between text-sm text-green-700">
                       <span>Discount ({discountPercent}%)</span>
                       <span>- Rs. {discountAmount}</span>
                     </div>
@@ -338,20 +339,20 @@ export default function OrdersPage() {
 
                 {/* Actions */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
-                  <button className="px-4 py-2 border border-gray-500 rounded font-medium hover:bg-gray-800">
+                  <button className="px-4 py-2 border border-gray-300 rounded font-medium hover:bg-gray-100">
                     Track Order
                   </button>
 
                   <button
                     onClick={() => handleBuyAgain(order.items)}
-                    className="px-4 py-2 border border-gray-500 rounded font-medium hover:bg-gray-800"
+                    className="px-4 py-2 border border-gray-300 rounded font-medium hover:bg-gray-100"
                   >
                     Buy Again
                   </button>
 
                   <button
                     onClick={() => generateInvoice(order)}
-                    className="px-4 py-2 border border-gray-500 rounded font-medium hover:bg-gray-800"
+                    className="px-4 py-2 border border-gray-300 rounded font-medium hover:bg-gray-100"
                   >
                     Download Invoice
                   </button>
@@ -361,6 +362,7 @@ export default function OrdersPage() {
           })}
         </div>
       )}
+      </div>
     </div>
   );
 }
