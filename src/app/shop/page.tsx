@@ -382,7 +382,7 @@ function ShopContent() {
                 const soldOut = !!(p as any).SoldOut || outOfStock;
                 const savePct = oldPrice && oldPrice > p.Price ? Math.round(((oldPrice - p.Price) / oldPrice) * 100) : null;
                 return (
-                <Link key={p.ID} href={`/product/${encodeURIComponent(p.Description)}`} className="block relative p-0 font-light hover:shadow-sm transition-colors hover:-translate-y-0.5 cursor-pointer overflow-hidden">
+                <Link key={p.ID} href={`/product/${encodeURIComponent(p.ProductName)}`} className="block relative p-0 font-light hover:shadow-sm transition-colors hover:-translate-y-0.5 cursor-pointer overflow-hidden">
                   {outOfStock && (
                     <span
                       className="absolute top-5 left-[-10px] bg-red-200 text-red-800 text-base font-bold px-4 py-1.5 rounded-full shadow-lg"

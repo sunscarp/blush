@@ -63,7 +63,7 @@ export default function CategoryCarousel({
           {visible.map(p => (
             <Link
               key={p.ID}
-              href={`/product/${encodeURIComponent(p.Description)}`}
+              href={`/product/${encodeURIComponent((p as any).ProductName || p.Description)}`}
               className="border-2 border-gray-700 bg-gray-900 rounded-xl p-4 font-bold hover:shadow-lg hover:border-gray-500 hover:bg-gray-800 transition text-white"
             >
               <div className="aspect-square border border-gray-600 rounded mb-3 overflow-hidden">

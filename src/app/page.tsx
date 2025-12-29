@@ -136,12 +136,12 @@ export default function Home() {
       Best Sellers
     </h2>
 
-    <div className="overflow-hidden">
+          <div className="overflow-hidden">
       <div className="flex gap-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
             {products.map((p) => (
           <Link
             key={p.ID}
-            href={`/product/${encodeURIComponent(p.Description)}`}
+            href={`/product/${encodeURIComponent(p.ProductName || p.Description)}`}
             className="flex-none w-[280px] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-1rem)] flex flex-col items-center snap-center px-2"
           >
             <div className="aspect-square border border-gray-300 rounded-none mb-3 overflow-hidden w-full max-w-xs bg-white">
@@ -188,7 +188,7 @@ export default function Home() {
         {products.slice(6, 9).map((p) => (
           <Link
             key={p.ID}
-            href={`/product/${encodeURIComponent(p.Description)}`}
+            href={`/product/${encodeURIComponent(p.ProductName || p.Description)}`}
             className="flex-none w-[280px] md:w-[calc(50%-12px)] lg:w-auto flex flex-col items-center snap-center px-2"
           >
             <div className="aspect-square border border-gray-300 rounded-none mb-3 overflow-hidden w-full max-w-xs bg-white">

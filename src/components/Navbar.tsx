@@ -431,7 +431,7 @@ function NavbarContent() {
                   {searchResults.map((product) => (
                     <Link
                       key={product.id}
-                      href={`/product/${encodeURIComponent(product.Description || product.Product || product.id)}`}
+                      href={`/product/${encodeURIComponent(product.ProductName || product.Description || product.Product || product.id)}`}
                       className="flex items-start space-x-3 sm:space-x-4 p-3 sm:p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all cursor-pointer"
                       onClick={() => {
                         setSearchMenuOpen(false);
@@ -442,7 +442,7 @@ function NavbarContent() {
                       {product.ImageUrl1 && (
                         <img
                           src={product.ImageUrl1}
-                          alt={product.Description || product.Product}
+                          alt={product.ProductName || product.Description || product.Product}
                           className="w-16 sm:w-20 h-16 sm:h-20 object-cover rounded-lg border border-gray-200 flex-shrink-0"
                           onError={(e) => {
                             (e.target as HTMLImageElement).style.display = 'none';
@@ -451,7 +451,7 @@ function NavbarContent() {
                       )}
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-black text-base sm:text-lg mb-1 truncate">
-                          {product.Description || 'Unnamed Product'}
+                          {product.ProductName || product.Description || 'Unnamed Product'}
                         </h3>
                         {product.Product && (
                           <p className="text-gray-600 text-xs sm:text-sm mb-2 truncate">

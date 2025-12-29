@@ -427,7 +427,7 @@ export default function CartPage() {
                         <Link
                           href={`/product/${encodeURIComponent(
                             String(
-                              prod?.Description || prod?.Product || key
+                              prod?.ProductName || prod?.Description || prod?.Product || key
                             )
                           )}`}
                           className="block w-full h-full relative"

@@ -33,7 +33,7 @@ type Product = {
 };
 
 export default function ProductPage() {
-  const { description } = useParams();
+  const { productname } = useParams();
   const router = useRouter();
   const { user } = useAuth();
   const { addItem } = useCart();
@@ -52,11 +52,11 @@ export default function ProductPage() {
   // Fetch product
   useEffect(() => {
     const fetchProduct = async () => {
-      if (!description || !db) return;
+      if (!productname || !db) return;
 
       const q = query(
         collection(db!, "inventory"),
-        where("Description", "==", decodeURIComponent(description as string))
+        where("ProductName", "==", decodeURIComponent(productname as string))
       );
 
       const snap = await getDocs(q);
@@ -68,7 +68,7 @@ export default function ProductPage() {
     };
 
     fetchProduct();
-  }, [description]);
+  }, [productname]);
 
   // Reset quantity when size changes
   useEffect(() => {
@@ -106,18 +106,22 @@ export default function ProductPage() {
 
     const fetchStyleItWith = async () => {
       // Determine complementary categories based on current product
-      const currentCategory = product.Product;
+      const currentCategoryRaw = (product as any).Product ?? (product as any).Category ?? (product as any).ProductName ?? "";
+      const currentCategory = typeof currentCategoryRaw === 'string' ? currentCategoryRaw : String(currentCategoryRaw || "");
       let targetCategories: string[] = [];
 
+      // Guard: only call toLowerCase on a string
+      const catLower = currentCategory ? currentCategory.toLowerCase() : "";
+
       // If it's a dress, recommend accessories (purses, earrings)
-      if (currentCategory.toLowerCase().includes('dress')) {
+      if (catLower.includes('dress')) {
         targetCategories = ['Purses', 'Earrings'];
       }
       // If it's an accessory (purse or earring), recommend dresses and other accessories
-      else if (currentCategory.toLowerCase().includes('purse')) {
+      else if (catLower.includes('purse')) {
         targetCategories = ['Short Dresses', 'Party Dresses', 'Earrings'];
       }
-      else if (currentCategory.toLowerCase().includes('earring')) {
+      else if (catLower.includes('earring')) {
         targetCategories = ['Short Dresses', 'Party Dresses', 'Purses'];
       }
       // For other categories, show a mix of everything except the current category
@@ -554,19 +558,19 @@ export default function ProductPage() {
               <div key={rp.ID} className="flex-shrink-0 w-1/2 sm:w-auto snap-start text-black transition px-2">
                 <button
                   type="button"
-                  onClick={() => router.push(`/product/${encodeURIComponent(rp.Description)}`)}
+                  onClick={() => router.push(`/product/${encodeURIComponent((rp as any).ProductName || rp.Description)}`)}
                   className="cursor-pointer block hover:scale-105 transition-transform"
-                  aria-label={`View ${rp.Description}`}
+                  aria-label={`View ${(rp as any).ProductName || rp.Description}`}
                 >
                   <img
                     src={rp.ImageUrl1 || "/placeholder.png"}
-                    alt={rp.Description}
+                    alt={(rp as any).ProductName || rp.Description}
                     className="h-36 sm:h-44 lg:h-52 object-contain mb-0 self-start"
                   />
                 </button>
 
                 <div className="flex flex-col items-start mt-1">
-                  <p className="text-base font-medium">{rp.Description}</p>
+                  <p className="text-base font-medium">{(rp as any).ProductName || rp.Description}</p>
                   <p className="font-bold text-lg mt-1">₹{rp.Price}</p>
                 </div>
               </div>
