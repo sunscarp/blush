@@ -462,6 +462,32 @@ if (storedBuyNow) {
           if (isBuyNow) {
   sessionStorage.removeItem("buyNowItem");
 }
+
+          // Fire-and-forget: send pink-themed invoice email to customer
+          try {
+            const safeOrderForEmail = {
+              id: orderRef.id,
+              status: "placed",
+              total: discountedTotal,
+              customer: customerDetails,
+              items: orderData.items,
+              createdAt: new Date().toISOString(),
+            };
+
+            fetch("/api/send-invoice", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                order: safeOrderForEmail,
+                orderId: orderRef.id,
+                sendTo: customerDetails.email,
+              }),
+            }).catch((err) => {
+              console.error("Failed to trigger invoice email:", err);
+            });
+          } catch (emailErr) {
+            console.error("Error preparing invoice email:", emailErr);
+          }
         } catch (error) {
           console.error("Error saving order:", error);
           setOrderStatus("failed");
@@ -555,7 +581,7 @@ if (storedBuyNow) {
               <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white text-xs font-bold">
                 W
               </span>
-              <span className="truncate text-left">+91XXXXXXXXXX</span>
+              <span className="truncate text-left">+91 8087847122</span>
             </div>
           </div>
 
