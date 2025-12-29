@@ -26,7 +26,7 @@ export default function InventoryPage() {
 
   if (authLoading || adminLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-bold">
+      <div className="min-h-screen flex items-center justify-center font-semibold text-black">
         Loading...
       </div>
     );
@@ -37,20 +37,28 @@ export default function InventoryPage() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-10 bg-gradient-to-b from-zinc-50 to-white dark:from-black dark:to-zinc-900">
-      <main className="mx-auto w-full max-w-6xl">
-        <header className="mb-6">
+    <div className="px-4 py-10 md:px-10 md:py-14 text-black flex justify-center">
+      <main className="w-full max-w-5xl">
+        <header className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h1 className="text-3xl font-extrabold">Inventory</h1>
-              <p className="text-sm text-zinc-500 mt-1">Admin inventory view — the table is mounted below.</p>
+              <h1 className="text-2xl sm:text-3xl font-semibold">Inventory</h1>
+              <p className="text-sm text-gray-600 mt-1">Admin inventory view — the table is mounted below.</p>
             </div>
-            <Link
-              href="/order-management"
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200"
-            >
-              Manage Orders
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/order-management"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+              >
+                Manage Orders
+              </Link>
+              <button
+                onClick={() => router.back()}
+                className="px-3 py-2 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors"
+              >
+                ← Back
+              </button>
+            </div>
           </div>
         </header>
 

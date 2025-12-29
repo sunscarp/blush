@@ -234,7 +234,7 @@ export default function InventoryTable() {
         <div className="mb-2">
           <h3 className="text-sm font-semibold text-indigo-800">Inventory <span className="text-xs text-slate-500">({filteredItems.length})</span></h3>
           <div className="mt-2">
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search tags (e.g. chelsea)" className="w-full max-w-sm rounded border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search tags (e.g. Pink Dress)" className="w-full max-w-sm rounded border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" />
           </div>
         </div>
 
