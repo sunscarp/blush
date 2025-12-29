@@ -98,7 +98,7 @@ export default function SignUpPage() {
       <div className="max-w-md w-full space-y-6 bg-white border border-gray-200 p-6 md:p-8 rounded-xl shadow-lg">
         <div>
           <h2 className="text-center text-3xl md:text-4xl font-semibold">Sign Up</h2>
-          <p className="mt-2 text-center text-gray-600 font-light">Create your Ballerz account</p>
+          <p className="mt-2 text-center text-gray-600 font-light">Create your blush account</p>
         </div>
 
         {error && (
