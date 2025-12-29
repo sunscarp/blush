@@ -313,7 +313,7 @@ if (storedBuyNow) {
         (typeof prod.Stock === "number" ? prod.Stock : undefined);
 
       if (typeof maxAllowed === "number" && qty > maxAllowed) {
-        const label = prod.Description || prod.Product || `Item ${item.ID}`;
+        const label = prod.ProductName || prod.Description || prod.Product || `Item ${item.ID}`;
         stockIssues.push(`${label} (${size || ""}) - only ${maxAllowed} left`);
       }
     });
@@ -538,9 +538,6 @@ if (storedBuyNow) {
           </div>
 
           <div className="space-y-1">
-            <p className="text-sm text-gray-700">
-              Thank you! Your order has been placed
-            </p>
             <p className="text-base font-semibold text-black">
               Order #{orderDetails?.orderId}
             </p>
@@ -755,7 +752,8 @@ if (storedBuyNow) {
                   >
                     <div className="flex-1">
                       <p className="text-sm text-gray-900">
-                        • {prod?.Description ?? ""} {item.Quantity > 1 ? `× ${item.Quantity}` : ""}
+                        • {prod?.ProductName ?? prod?.Description ?? ""}
+                        {item.Quantity > 1 ? `× ${item.Quantity}` : ""}
                       </p>
                       {item.Size && (
                         <p className="text-xs text-gray-500">Size: {item.Size}</p>
