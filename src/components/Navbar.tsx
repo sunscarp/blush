@@ -243,16 +243,32 @@ function NavbarContent() {
               {/* Additional Menu Items */}
               <div className="border-t border-black pt-4 mt-6">
                 <Link
-                  href="#"
+                  href="/privacy-policy"
                   className="block py-3 px-4 text-base sm:text-lg text-black hover:bg-pink-50 rounded-md transition-colors min-h-[48px] flex items-center"
-                  onClick={() => setMenuOpen(false)}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    window.location.href = "/privacy-policy";
+                  }}
                 >
                   Privacy Policy
                 </Link>
                 <Link
-                  href="#"
+                  href="/refund-policy"
                   className="block py-3 px-4 text-base sm:text-lg text-black hover:bg-pink-50 rounded-md transition-colors min-h-[48px] flex items-center"
-                  onClick={() => setMenuOpen(false)}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    window.location.href = "/refund-policy";
+                  }}
+                >
+                  Return &amp; Refund
+                </Link>
+                <Link
+                  href="/shipping-policy"
+                  className="block py-3 px-4 text-base sm:text-lg text-black hover:bg-pink-50 rounded-md transition-colors min-h-[48px] flex items-center"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    window.location.href = "/shipping-policy";
+                  }}
                 >
                   Shipping Policy
                 </Link>
