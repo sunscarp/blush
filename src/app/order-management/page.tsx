@@ -47,6 +47,7 @@ type Order = {
   };
   total: number;
   status: OrderStatus;
+  trackingId?: string;
   items: OrderItem[];
 };
 
@@ -67,6 +68,8 @@ export default function OrderManagementPage() {
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [trackingEdits, setTrackingEdits] = useState<Record<string, string>>({});
+  const [updatingTrackingId, setUpdatingTrackingId] = useState<string | null>(null);
 
   // Auth and admin guards
   useEffect(() => {
@@ -137,6 +140,20 @@ export default function OrderManagementPage() {
       style: "currency",
       currency: "INR",
     }).format(amount);
+  };
+
+  const handleTrackingUpdate = async (orderId: string) => {
+    const nextValue = (trackingEdits[orderId] ?? "").trim();
+    setUpdatingTrackingId(orderId);
+    try {
+      const orderRef = doc(db!, "Orders", orderId);
+      await updateDoc(orderRef, { trackingId: nextValue });
+      setError(null);
+    } catch (err: any) {
+      setError("Failed to update tracking ID: " + err.message);
+    } finally {
+      setUpdatingTrackingId(null);
+    }
   };
 
   if (authLoading || adminLoading) {
@@ -242,7 +259,7 @@ export default function OrderManagementPage() {
                     )}
                   </div>
 
-                  <div className="flex flex-col items-start lg:items-end gap-2">
+                  <div className="flex flex-col items-start lg:items-end gap-2 w-full max-w-xs">
                     <p className="text-xl font-bold">
                       {formatCurrency(order.total)}
                     </p>
@@ -260,6 +277,33 @@ export default function OrderManagementPage() {
                         </option>
                       ))}
                     </select>
+                    <div className="mt-2 w-full space-y-1">
+                      <label className="block text-xs font-semibold text-gray-700">
+                        Tracking ID
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={trackingEdits[order.id] ?? order.trackingId ?? ""}
+                          onChange={(e) =>
+                            setTrackingEdits((prev) => ({
+                              ...prev,
+                              [order.id]: e.target.value,
+                            }))
+                          }
+                          placeholder="Enter tracking ID"
+                          className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleTrackingUpdate(order.id)}
+                          disabled={updatingTrackingId === order.id}
+                          className="px-3 py-1.5 text-xs font-semibold rounded-md border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

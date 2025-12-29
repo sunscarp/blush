@@ -356,6 +356,8 @@ if (storedBuyNow) {
       userId: user?.uid || null,
       // Always store the signed-in user's email under userEmail
       userEmail: user?.email || null,
+      // Tracking ID is assigned later from the admin panel
+      trackingId: "",
     };
 
     const options = {

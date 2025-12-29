@@ -51,6 +51,7 @@ type Order = {
   };
   total: number;
   status: OrderStatus;
+  trackingId?: string;
   items: OrderItem[];
 };
 
@@ -361,9 +362,13 @@ export default function OrdersPage() {
 
                 {/* Actions */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
-                  <button className="px-4 py-2 border border-gray-300 rounded font-medium hover:bg-gray-100">
-                    Track Order
-                  </button>
+                  <div className="px-4 py-2 border border-gray-300 rounded font-medium bg-gray-50 text-sm flex items-center justify-center text-gray-800">
+                    <span className="truncate">
+                      {order.trackingId && order.trackingId.trim() !== ""
+                        ? order.trackingId
+                        : "Tracking id is not assigned yet"}
+                    </span>
+                  </div>
 
                   <button
                     onClick={() => handleBuyAgain(order.items)}
