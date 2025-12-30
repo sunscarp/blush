@@ -364,7 +364,7 @@ if (storedBuyNow) {
       key: razorpayKeyId, // Your Razorpay Key ID
       amount: discountedTotal * 100, // Amount in paise (multiply by 100)
       currency: "INR",
-      name: "Ballerz",
+      name: "Blush",
       description: `Order for ${items.length} items`,
       handler: async function (response: any) {
         try {
