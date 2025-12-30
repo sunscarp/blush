@@ -47,15 +47,14 @@ export default function InventoryTable() {
     ImageUrl1: string;
     ImageUrl2: string;
     ImageUrl3: string;
-    Material: string;
     Price: string;
     Category: string;
-    Tag: string;
     OriginalPrice: string;
     StockS: string;
     StockM: string;
     StockL: string;
     StockXL: string;
+    Stock: string;
   };
 
   const CATEGORIES = [
@@ -77,15 +76,14 @@ export default function InventoryTable() {
     ImageUrl1: "",
     ImageUrl2: "",
     ImageUrl3: "",
-    Material: "",
     Price: "",
     Category: CATEGORIES[0],
-    Tag: "",
     OriginalPrice: "",
     StockS: "",
     StockM: "",
     StockL: "",
     StockXL: "",
+    Stock: "0",
   });
 
   // No filters / add-item UI — render whatever is in `inventory`
@@ -110,10 +108,14 @@ export default function InventoryTable() {
     return () => unsub();
   }, []);
 
-  // allItems is the live set pulled from Firestore; support a case-insensitive tag search
+  // allItems is the live set pulled from Firestore; support a case-insensitive search by ProductName or Description
   const lowerSearch = (search || "").trim().toLowerCase();
   const filteredItems = lowerSearch
-    ? allItems.filter((it) => ((it?.Tag ?? "") + "").toString().toLowerCase().includes(lowerSearch))
+    ? allItems.filter((it) => {
+        const productName = (it?.ProductName ?? "").toString().toLowerCase();
+        const description = (it?.Description ?? "").toString().toLowerCase();
+        return productName.includes(lowerSearch) || description.includes(lowerSearch);
+      })
     : allItems;
 
   async function handleDelete(docId?: string) {
@@ -149,22 +151,21 @@ export default function InventoryTable() {
         ImageUrl1: form.ImageUrl1 || "",
         ImageUrl2: form.ImageUrl2 || "",
         ImageUrl3: form.ImageUrl3 || "",
-        Material: form.Material || "",
         Price: form.Price ? Number(form.Price) : undefined,
         Category: form.Category || "",
-        Tag: form.Tag || "",
         OriginalPrice: form.OriginalPrice ? Number(form.OriginalPrice) : undefined,
         createdAt: serverTimestamp(),
         StockS: form.StockS ? Number(form.StockS) : undefined,
         StockM: form.StockM ? Number(form.StockM) : undefined,
         StockL: form.StockL ? Number(form.StockL) : undefined,
         StockXL: form.StockXL ? Number(form.StockXL) : undefined,
+        Stock: form.Stock ? Number(form.Stock) : 0,
       };
       // remove undefined fields
       Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
       await addDoc(collection(db!, 'inventory'), payload);
       setShowAddModal(false);
-      setForm({ ProductName: "", Description: "", ShortTruction: "", ID: "", ImageUrl1: "", ImageUrl2: "", ImageUrl3: "", Material: "", Price: "", Category: CATEGORIES[0], Tag: "", OriginalPrice: "", StockS: "", StockM: "", StockL: "", StockXL: "" });
+      setForm({ ProductName: "", Description: "", ShortTruction: "", ID: "", ImageUrl1: "", ImageUrl2: "", ImageUrl3: "", Price: "", Category: CATEGORIES[0], OriginalPrice: "", StockS: "", StockM: "", StockL: "", StockXL: "", Stock: "0" });
       setError(null);
     } catch (e: any) {
       setError(String(e?.message ?? e));
@@ -181,15 +182,14 @@ export default function InventoryTable() {
       ImageUrl1: item.ImageUrl1 ?? "",
       ImageUrl2: item.ImageUrl2 ?? "",
       ImageUrl3: item.ImageUrl3 ?? "",
-      Material: item.Material ?? "",
       Price: item.Price ? String(item.Price) : "",
       Category: item.Category ?? item.Product ?? CATEGORIES[0],
-      Tag: item.Tag ?? "",
       OriginalPrice: item.OriginalPrice ? String(item.OriginalPrice) : "",
       StockS: item.StockS !== undefined ? String(item.StockS) : "",
       StockM: item.StockM !== undefined ? String(item.StockM) : "",
       StockL: item.StockL !== undefined ? String(item.StockL) : "",
       StockXL: item.StockXL !== undefined ? String(item.StockXL) : "",
+      Stock: item.Stock !== undefined ? String(item.Stock) : "0",
     });
     setShowEditModal(true);
   }
@@ -207,15 +207,14 @@ export default function InventoryTable() {
         ImageUrl1: form.ImageUrl1 || "",
         ImageUrl2: form.ImageUrl2 || "",
         ImageUrl3: form.ImageUrl3 || "",
-        Material: form.Material || "",
         Price: form.Price ? Number(form.Price) : undefined,
         Category: form.Category || "",
-        Tag: form.Tag || "",
         OriginalPrice: form.OriginalPrice ? Number(form.OriginalPrice) : undefined,
         StockS: form.StockS ? Number(form.StockS) : undefined,
         StockM: form.StockM ? Number(form.StockM) : undefined,
         StockL: form.StockL ? Number(form.StockL) : undefined,
         StockXL: form.StockXL ? Number(form.StockXL) : undefined,
+        Stock: form.Stock ? Number(form.Stock) : 0,
       };
       Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
       await updateDoc(firestoreDoc(db!, 'inventory', editingId), payload);
@@ -234,7 +233,7 @@ export default function InventoryTable() {
         <div className="mb-2">
           <h3 className="text-sm font-semibold text-indigo-800">Inventory <span className="text-xs text-slate-500">({filteredItems.length})</span></h3>
           <div className="mt-2">
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search tags (e.g. Pink Dress)" className="w-full max-w-sm rounded border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by product name or description" className="w-full max-w-sm rounded border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" />
           </div>
         </div>
 
@@ -243,7 +242,6 @@ export default function InventoryTable() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-4">
             {filteredItems.map((it) => {
-            const tags = (it?.Tag ?? "").toString().split(";").map((t: string) => t.trim()).filter(Boolean);
             const img = it?.ImageUrl1 || it?.ImageUrl2 || it?.ImageUrl3 || "/favicon.ico";
             return (
               <div key={it.id ?? it.ID ?? it.Product} className="relative flex gap-4 rounded-lg border p-4 bg-slate-50 border-slate-200 shadow-sm">
@@ -251,11 +249,6 @@ export default function InventoryTable() {
                 <button onClick={(e) => { e.stopPropagation(); handleDelete(it.id); }} aria-label="Delete item" className="absolute right-2 bottom-2 z-20 rounded px-2 py-1 text-xs text-red-600 bg-white/90 hover:bg-red-50 border border-red-100">Delete</button>
                 <div className="w-36 flex-shrink-0">
                   <img src={img} alt={it?.Product ?? "item"} className="h-28 w-full object-cover rounded" />
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {tags.map((tag: string) => (
-                      <div key={tag} className="rounded-md bg-indigo-50 px-2 py-1 text-xs text-indigo-700">{tag}</div>
-                    ))}
-                  </div>
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
@@ -268,7 +261,6 @@ export default function InventoryTable() {
                   <div className="mt-3 flex flex-wrap gap-4 text-sm text-slate-700">
                     <div className="text-sm"><strong className="text-slate-600">Price:</strong> <span className="text-teal-600">{it?.Price ?? "-"}</span></div>
                     <div className="text-sm"><strong className="text-slate-600">Original Price:</strong> <span className="text-rose-600">{it?.OriginalPrice ?? "-"}</span></div>
-                    <div className="text-sm"><strong className="text-slate-600">Material:</strong> {it?.Material ?? "-"}</div>
                   </div>
                 </div>
               </div>
@@ -332,7 +324,7 @@ export default function InventoryTable() {
                   <input type="number" className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.OriginalPrice} onChange={(e) => updateForm('OriginalPrice', e.target.value)} />
                 </div>
               </div>
-              {/* Stock by Size fields only */}
+              {/* Stock by Size fields only for size-based categories */}
               {SIZE_BASED_CATEGORIES.includes(form.Category) && (
                 <div>
                   <label className="block text-xs text-slate-600 mb-2">Stock by Size</label>
@@ -356,7 +348,13 @@ export default function InventoryTable() {
                   </div>
                 </div>
               )}
-              {/* ...existing code... */}
+              {/* General Stock field for non-size-based categories (Purses, Earrings) */}
+              {!SIZE_BASED_CATEGORIES.includes(form.Category) && (
+                <div>
+                  <label className="block text-xs text-slate-600">Stock (default: 0)</label>
+                  <input type="number" min="0" className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.Stock} onChange={(e) => updateForm('Stock', e.target.value)} placeholder="0" />
+                </div>
+              )}
               <div className="flex justify-end">
                 <button type="submit" className="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">Add Item</button>
               </div>
@@ -415,7 +413,7 @@ export default function InventoryTable() {
                   <input type="number" className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.OriginalPrice} onChange={(e) => updateForm('OriginalPrice', e.target.value)} />
                 </div>
               </div>
-              {/* Stock by Size fields only */}
+              {/* Stock by Size fields only for size-based categories */}
               {SIZE_BASED_CATEGORIES.includes(form.Category) && (
                 <div>
                   <label className="block text-xs text-slate-600 mb-2">Stock by Size</label>
@@ -439,7 +437,13 @@ export default function InventoryTable() {
                   </div>
                 </div>
               )}
-              {/* ...existing code... */}
+              {/* General Stock field for non-size-based categories (Purses, Earrings) */}
+              {!SIZE_BASED_CATEGORIES.includes(form.Category) && (
+                <div>
+                  <label className="block text-xs text-slate-600">Stock (default: 0)</label>
+                  <input type="number" min="0" className="mt-1 w-full rounded border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-black" value={form.Stock} onChange={(e) => updateForm('Stock', e.target.value)} placeholder="0" />
+                </div>
+              )}
               <div className="flex justify-end gap-2">
                 <button type="button" onClick={() => { setShowEditModal(false); setEditingId(null); }} className="rounded border px-4 py-2 text-sm text-slate-600">Cancel</button>
                 <button type="submit" className="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">Save Changes</button>

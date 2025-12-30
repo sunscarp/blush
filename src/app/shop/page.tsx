@@ -13,6 +13,7 @@ type Product = {
   Price: number;
   ProductName: string;
   Category?: string;
+  Stock?: number;
 };
 
 function ShopContent() {
@@ -377,8 +378,20 @@ function ShopContent() {
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                 {sorted.map(p => {
                 const oldPrice = (p as any).OldPrice ?? (p as any).MSRP ?? null;
-                const stock = (p as any).Stock;
-                const outOfStock = stock !== undefined && Number(stock) === 0;
+                
+                // Check if product is out of stock
+                // For general stock products (Purses, Earrings), check Stock field
+                // For size-based products (Dresses), check if all sizes are out of stock
+                const generalStock = (p as any).Stock;
+                const isGeneralStockProduct = p.Category === "Purses" || p.Category === "Earrings";
+                const hasNoSizeStock = !isGeneralStockProduct && 
+                                       ((p as any).StockS || 0) === 0 && 
+                                       ((p as any).StockM || 0) === 0 && 
+                                       ((p as any).StockL || 0) === 0 && 
+                                       ((p as any).StockXL || 0) === 0;
+                
+                const outOfStock = (isGeneralStockProduct && generalStock !== undefined && Number(generalStock) === 0) || 
+                                   (!isGeneralStockProduct && hasNoSizeStock);
                 const soldOut = !!(p as any).SoldOut || outOfStock;
                 const savePct = oldPrice && oldPrice > p.Price ? Math.round(((oldPrice - p.Price) / oldPrice) * 100) : null;
                 return (

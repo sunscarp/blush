@@ -30,6 +30,8 @@ type Product = {
   StockM?: number;
   StockL?: number;
   StockXL?: number;
+  Stock?: number;
+  Category?: string;
 };
 
 export default function ProductPage() {
@@ -80,12 +82,21 @@ export default function ProductPage() {
     const fetchCartQuantity = async () => {
       if (!user?.email || !db || !product) return;
 
+      // Check if this product uses general stock (Purses, Earrings) or size-based stock
+      const currentCategory = (product as any).Category || (product as any).Product || "";
+      const isGeneralStockProduct = currentCategory === "Purses" || currentCategory === "Earrings" || 
+                                     currentCategory.toLowerCase().includes("purse") || 
+                                     currentCategory.toLowerCase().includes("earring");
+
+      // For general stock products, use "One Size" as the size identifier
+      const sizeToUse = isGeneralStockProduct ? "One Size" : selectedSize;
+
       const cartRef = collection(db!, "Cart");
       const q = query(
         cartRef,
         where("UserMail", "==", user.email),
         where("ID", "==", product.ID),
-        where("Size", "==", selectedSize)
+        where("Size", "==", sizeToUse)
       );
 
       const snap = await getDocs(q);
@@ -179,8 +190,21 @@ export default function ProductPage() {
     product.ImageUrl3,
   ].filter(Boolean) as string[];
 
+  // Check if this product uses general stock (Purses, Earrings) or size-based stock
+  const currentCategory = (product as any).Category || (product as any).Product || "";
+  const isGeneralStockProduct = currentCategory === "Purses" || currentCategory === "Earrings" || 
+                                 currentCategory.toLowerCase().includes("purse") || 
+                                 currentCategory.toLowerCase().includes("earring");
+
   // Get available stock for selected size (accounting for items already in cart)
   const getAvailableStock = () => {
+    // For general stock products (Purses, Earrings)
+    if (isGeneralStockProduct) {
+      const totalStock = product.Stock !== undefined ? product.Stock : 0;
+      return Math.max(0, totalStock - cartQuantity);
+    }
+    
+    // For size-based stock products (Dresses, etc.)
     const totalStock = (() => {
       switch (selectedSize) {
         case "S":
@@ -207,12 +231,15 @@ export default function ProductPage() {
   const handleAddToCart = async () => {
     // Check stock availability
     if (availableStock === 0) {
-      alert("This size is out of stock");
+      alert(isGeneralStockProduct ? "This item is out of stock" : "This size is out of stock");
       return;
     }
 
     if (quantity > availableStock) {
-      alert(`Only ${availableStock} items available in size ${selectedSize}`);
+      alert(isGeneralStockProduct 
+        ? `Only ${availableStock} items available`
+        : `Only ${availableStock} items available in size ${selectedSize}`
+      );
       return;
     }
 
@@ -236,11 +263,14 @@ export default function ProductPage() {
 
     const cartRef = collection(db!, "Cart");
 
+    // For general stock products, use "One Size" as the size identifier
+    const sizeToUse = isGeneralStockProduct ? "One Size" : selectedSize;
+
     const q = query(
       cartRef,
       where("UserMail", "==", user.email),
       where("ID", "==", product.ID),
-      where("Size", "==", selectedSize)
+      where("Size", "==", sizeToUse)
     );
 
     const snap = await getDocs(q);
@@ -257,7 +287,7 @@ export default function ProductPage() {
       await addDoc(cartRef, {
         ID: product.ID,
         Quantity: quantity,
-        Size: selectedSize,
+        Size: sizeToUse,
         UserMail: user.email,
         ["Added On"]: serverTimestamp(),
       });
@@ -397,33 +427,35 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* SIZE (moved above quantity) */}
-            <div className="mb-3">
-              <p className="mb-2 text-sm">Size:</p>
-              <div className="flex gap-2 flex-wrap">
-                {['S', 'M', 'L', 'XL'].map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`rounded-sm border font-semibold transition-colors duration-150 flex items-center justify-center ${
-                      selectedSize === size
-                        ? "bg-[#ffb6c1] text-white"
-                        : "border-[#ffd1dc] text-black"
-                    }`}
-                    style={{
-                      width: '48px',
-                      height: '40px',
-                      fontSize: '15px',
-                      lineHeight: 1.1
-                    }}
-                  >
-                    {size}
-                  </button>
-                ))}
+            {/* SIZE (only for size-based products, not for Purses/Earrings) */}
+            {!isGeneralStockProduct && (
+              <div className="mb-3">
+                <p className="mb-2 text-sm">Size:</p>
+                <div className="flex gap-2 flex-wrap">
+                  {['S', 'M', 'L', 'XL'].map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`rounded-sm border font-semibold transition-colors duration-150 flex items-center justify-center ${
+                        selectedSize === size
+                          ? "bg-[#ffb6c1] text-white"
+                          : "border-[#ffd1dc] text-black"
+                      }`}
+                      style={{
+                        width: '48px',
+                        height: '40px',
+                        fontSize: '15px',
+                        lineHeight: 1.1
+                      }}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* QUANTITY (now below size) */}
+            {/* QUANTITY (now below size or immediately below price for general stock products) */}
             <div className="mb-5">
               <label 
                 className="text-gray-900 mb-2 block"
@@ -436,7 +468,9 @@ export default function ProductPage() {
                 Quantity:
               </label>
               {availableStock === 0 && (
-                <p className="text-sm text-red-500 mb-2">Out of stock in size {selectedSize}</p>
+                <p className="text-sm text-red-500 mb-2">
+                  {isGeneralStockProduct ? "Out of stock" : `Out of stock in size ${selectedSize}`}
+                </p>
               )}
               <div className="flex items-start space-x-3">
                 <div className="flex items-center border border-gray-300" style={{ height: '54px' }}>
